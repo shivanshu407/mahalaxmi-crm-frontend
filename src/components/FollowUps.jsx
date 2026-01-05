@@ -51,9 +51,13 @@ export default function FollowUps() {
         e.preventDefault();
         if (!selectedLead) return alert('Please select a lead');
 
-        await createFollowUp(newFollowUp);
-        setShowAddForm(false);
-        resetAddForm();
+        try {
+            await createFollowUp(newFollowUp);
+            setShowAddForm(false);
+            resetAddForm();
+        } catch (error) {
+            alert(error.message); // Will show "This lead already has a pending follow-up scheduled."
+        }
     };
 
     const resetAddForm = () => {
@@ -77,6 +81,7 @@ export default function FollowUps() {
             case 'try_again': return '🔄 Try Again';
             case 'rescheduled': return '📅 Reschedule';
             case 'escalated': return '🔥 Escalate to Admin';
+            case 'rejected': return '❌ Reject Lead';
             default: return type;
         }
     };
@@ -304,7 +309,7 @@ export default function FollowUps() {
                                 <div className="form-group">
                                     <label className="form-label">Outcome *</label>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                        {['completed', 'try_again', 'rescheduled', 'escalated'].map(type => (
+                                        {['completed', 'try_again', 'rescheduled', 'escalated', 'rejected'].map(type => (
                                             <div
                                                 key={type}
                                                 onClick={() => setOutcomeData(d => ({ ...d, outcome: type }))}
@@ -315,7 +320,8 @@ export default function FollowUps() {
                                                     background: outcomeData.outcome === type ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-secondary)',
                                                     cursor: 'pointer',
                                                     textAlign: 'center',
-                                                    fontWeight: '500'
+                                                    fontWeight: '500',
+                                                    color: type === 'rejected' ? 'var(--accent-danger)' : 'inherit'
                                                 }}
                                             >
                                                 {getOutcomeLabel(type)}

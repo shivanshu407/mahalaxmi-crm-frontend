@@ -364,8 +364,8 @@ export const useStore = create(
                     if (outcomeData.outcome === 'try_again' || outcomeData.outcome === 'rescheduled') {
                         get().fetchFollowUps();
                     }
-                    // If escalated, fetch leads to update status if on leads page
-                    if (outcomeData.outcome === 'escalated') {
+                    // If escalated or rejected, fetch leads to update status if on leads page
+                    if (outcomeData.outcome === 'escalated' || outcomeData.outcome === 'rejected') {
                         get().fetchLeads();
                     }
                 } catch (error) {
