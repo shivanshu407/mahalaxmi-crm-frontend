@@ -30,7 +30,7 @@ export default function Leads({ mode = 'new' }) {
     const {
         leads, warmLeads, fetchLeads, fetchWarmLeads, isLoading,
         isModalOpen, openModal, closeModal, selectedLead, setSelectedLead,
-        updateLeadStatus, convertLeadToClient, rejectLead, scheduleVisit, user
+        updateLeadStatus, convertLeadToClient, rejectLead, scheduleVisit, deleteLead, user
     } = useStore();
 
     const [viewMode, setViewMode] = useState(mode === 'warm' ? 'table' : 'pipeline');
@@ -288,6 +288,16 @@ export default function Leads({ mode = 'new' }) {
                                                         title="Reject / Archive"
                                                     >
                                                         Reject
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        style={{ background: '#666' }}
+                                                        onClick={() => {
+                                                            if (confirm('Delete this lead permanently?')) deleteLead(lead.id);
+                                                        }}
+                                                        title="Delete Permanently"
+                                                    >
+                                                        🗑️
                                                     </button>
                                                 </div>
                                             ) : (

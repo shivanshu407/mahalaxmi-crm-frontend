@@ -6,7 +6,7 @@ import { useStore } from '../stores/store';
  * FEATURES: List clients, Search, Manual Add Client
  */
 export default function Clients() {
-    const { clients, fetchClients, createClient, isLoading } = useStore();
+    const { clients, fetchClients, createClient, deleteClient, isLoading } = useStore();
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [newClient, setNewClient] = useState({
@@ -65,6 +65,7 @@ export default function Clients() {
                                     <th style={{ padding: 'var(--space-3)' }}>Location</th>
                                     <th style={{ padding: 'var(--space-3)' }}>Source</th>
                                     <th style={{ padding: 'var(--space-3)' }}>Converted From</th>
+                                    <th style={{ padding: 'var(--space-3)' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -82,6 +83,18 @@ export default function Clients() {
                                             </span>
                                         </td>
                                         <td style={{ padding: 'var(--space-3)' }}>{client.lead_name ? `Lead #${client.lead_id}` : 'Manual'}</td>
+                                        <td style={{ padding: 'var(--space-3)' }}>
+                                            <button
+                                                className="btn btn-sm"
+                                                style={{ background: '#666' }}
+                                                onClick={() => {
+                                                    if (confirm('Delete this client permanently?')) deleteClient(client.id);
+                                                }}
+                                                title="Delete Client"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>

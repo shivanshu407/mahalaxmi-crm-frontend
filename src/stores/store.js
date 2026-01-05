@@ -149,6 +149,25 @@ export const useStore = create(
                 }
             },
 
+            deleteClient: async (id) => {
+                try {
+                    await api(`/clients/${id}`, { method: 'DELETE' });
+                    get().fetchClients();
+                } catch (error) {
+                    set({ error: error.message });
+                }
+            },
+
+            deleteLead: async (id) => {
+                try {
+                    await api(`/leads/${id}`, { method: 'DELETE' });
+                    get().fetchLeads();
+                    get().fetchWarmLeads();
+                } catch (error) {
+                    set({ error: error.message });
+                }
+            },
+
             // Lead Workflows
             convertLeadToClient: async (id) => {
                 try {
