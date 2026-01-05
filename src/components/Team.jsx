@@ -6,7 +6,7 @@ import { useStore } from '../stores/store';
  * Allows admin to create and manage employee accounts
  */
 export default function Team() {
-    const { user, users, fetchUsers, deleteUser } = useStore();
+    const { user, users, fetchUsers, deleteUser, registerUser } = useStore();
     const [showAddForm, setShowAddForm] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -47,27 +47,12 @@ export default function Team() {
         setMessage({ type: '', text: '' });
 
         try {
-            const token = localStorage.getItem('crm_token');
-            const response = await fetch('/api/v1/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (response.ok) {
-                setMessage({ type: 'success', text: 'Employee account created successfully!' });
-                setFormData({ name: '', email: '', password: '', role: 'agent' });
-                setShowAddForm(false);
-                fetchUsers(); // Refresh user list
-            } else {
-                const data = await response.json();
-                setMessage({ type: 'error', text: data.error || 'Failed to create account' });
-            }
+            await registerUser(formData);
+            setMessage({ type: 'success', text: 'Employee account created successfully!' });
+            setFormData({ name: '', email: '', password: '', role: 'agent' });
+            setShowAddForm(false);
         } catch (error) {
-            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+            setMessage({ type: 'error', text: error.message || 'Failed to create account' });
         } finally {
             setIsSubmitting(false);
         }

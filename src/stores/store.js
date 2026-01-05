@@ -403,6 +403,20 @@ export const useStore = create(
                 }
             },
 
+            registerUser: async (userData) => {
+                try {
+                    await api('/auth/register', {
+                        method: 'POST',
+                        body: JSON.stringify(userData)
+                    });
+                    // Refresh users list
+                    get().fetchUsers();
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
             // UI actions
             setCurrentView: (view) => set({ currentView: view }),
             setSelectedLead: (lead) => set({ selectedLead: lead }),
