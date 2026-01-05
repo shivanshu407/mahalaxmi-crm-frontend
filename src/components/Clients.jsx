@@ -2,165 +2,154 @@ import { useEffect, useState } from 'preact/hooks';
 import { useStore } from '../stores/store';
 
 /**
- * Clients Component - Archive of Successful Deals
- * Admin-only view for past clients who completed purchases
- * Can be contacted for future deals
+ * Clients Component
+ * FEATURES: List clients, Search, Manual Add Client
  */
 export default function Clients() {
-    const { leads, fetchLeads, isLoading, user } = useStore();
+    const { clients, fetchClients, createClient, isLoading } = useStore();
     const [searchTerm, setSearchTerm] = useState('');
-
-    const isAdmin = user?.role === 'admin';
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [newClient, setNewClient] = useState({
+        name: '',
+        phone: '',
+        email: '',
+        location: '',
+        source: 'manual'
+    });
 
     useEffect(() => {
-        fetchLeads();
+        fetchClients();
     }, []);
 
-    // Only show "won" leads - these are successful closed deals
-    const clients = leads.filter(lead =>
-        lead.status === 'won' &&
-        (searchTerm === '' ||
-            lead.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            lead.location?.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const handleSearch = (e) => {
+        setSearchTerm(e.target.value);
+        fetchClients(e.target.value);
+    };
 
-    // If not admin, show access denied
-    if (!isAdmin) {
-        return (
-            <div className="content-section">
-                <div className="card" style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
-                    <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)' }}>🔒</div>
-                    <h2>Access Restricted</h2>
-                    <p style={{ color: 'var(--text-muted)' }}>This section is only accessible to administrators.</p>
-                </div>
-            </div>
-        );
-    }
+    const handleAdd = async (e) => {
+        e.preventDefault();
+        await createClient(newClient);
+        setShowAddForm(false);
+        setNewClient({ name: '', phone: '', email: '', location: '', source: 'manual' });
+    };
 
     return (
         <div className="content-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
-                <div>
-                    <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>Clients</h1>
-                    <p style={{ color: 'var(--text-muted)', marginTop: 'var(--space-1)' }}>
-                        Successful deals - contact again for new opportunities
-                    </p>
+                <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>Clients</h1>
+                <div style={{ display: 'flex', gap: 'var(--space-4)' }}>
+                    <input
+                        type="text"
+                        placeholder="Search clients..."
+                        className="form-input"
+                        style={{ width: '200px' }}
+                        value={searchTerm}
+                        onInput={handleSearch}
+                    />
+                    <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
+                        + Add Client
+                    </button>
                 </div>
-                <div style={{
-                    background: 'rgba(34, 197, 94, 0.1)',
-                    border: '1px solid var(--accent-success)',
-                    borderRadius: 'var(--radius-lg)',
-                    padding: 'var(--space-3) var(--space-5)',
-                    color: 'var(--accent-success)',
-                    fontWeight: '600'
-                }}>
-                    {clients.length} Closed Deals
-                </div>
-            </div>
-
-            {/* Search */}
-            <div style={{ marginBottom: 'var(--space-6)' }}>
-                <input
-                    type="text"
-                    className="form-input"
-                    placeholder="Search clients by name or location..."
-                    value={searchTerm}
-                    onInput={(e) => setSearchTerm(e.target.value)}
-                    style={{ maxWidth: '400px' }}
-                />
             </div>
 
             {isLoading && clients.length === 0 ? (
                 <div className="loading" />
-            ) : clients.length > 0 ? (
+            ) : (
                 <div className="card full-width">
-                    <div className="table-container">
-                        <table>
+                    {clients.length > 0 ? (
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
-                                <tr>
-                                    <th>Client Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Location</th>
-                                    <th>Property Type</th>
-                                    <th>Deal Value</th>
-                                    <th>Closed Date</th>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+                                    <th style={{ padding: 'var(--space-3)' }}>Name</th>
+                                    <th style={{ padding: 'var(--space-3)' }}>Contact</th>
+                                    <th style={{ padding: 'var(--space-3)' }}>Location</th>
+                                    <th style={{ padding: 'var(--space-3)' }}>Source</th>
+                                    <th style={{ padding: 'var(--space-3)' }}>Converted From</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {clients.map(client => (
-                                    <tr key={client.id}>
-                                        <td>
-                                            <div style={{ fontWeight: '600' }}>{client.name}</div>
-                                            {client.contact_person && (
-                                                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                                                    via {client.contact_person}
-                                                </div>
-                                            )}
+                                    <tr key={client.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: 'var(--space-3)', fontWeight: '500' }}>{client.name}</td>
+                                        <td style={{ padding: 'var(--space-3)' }}>
+                                            <div>{client.phone}</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{client.email}</div>
                                         </td>
-                                        <td>
-                                            <a href={`tel:${client.phone}`} style={{ color: 'var(--accent-primary)' }}>
-                                                {client.phone || '-'}
-                                            </a>
+                                        <td style={{ padding: 'var(--space-3)' }}>{client.location || '-'}</td>
+                                        <td style={{ padding: 'var(--space-3)' }}>
+                                            <span className="status-badge" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
+                                                {client.source}
+                                            </span>
                                         </td>
-                                        <td>
-                                            <a href={`mailto:${client.email}`} style={{ color: 'var(--accent-primary)' }}>
-                                                {client.email || '-'}
-                                            </a>
-                                        </td>
-                                        <td>{client.location || '-'}</td>
-                                        <td>{client.interest || '-'}</td>
-                                        <td style={{ color: 'var(--accent-success)', fontWeight: '600' }}>
-                                            {client.budget_max
-                                                ? `₹${(client.budget_max / 100000).toFixed(0)}L`
-                                                : '-'
-                                            }
-                                        </td>
-                                        <td style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
-                                            {client.updated_at
-                                                ? new Date(client.updated_at).toLocaleDateString()
-                                                : '-'
-                                            }
-                                        </td>
+                                        <td style={{ padding: 'var(--space-3)' }}>{client.lead_name ? `Lead #${client.lead_id}` : 'Manual'}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            ) : (
-                <div className="card full-width">
-                    <div className="empty-state">
-                        <div className="empty-state-icon">🏆</div>
-                        <p>No closed deals yet. Keep working on those leads!</p>
-                    </div>
+                    ) : (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">👥</div>
+                            <p>No clients yet. Convert warm leads or add one manually!</p>
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* Summary Cards */}
-            {clients.length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)', marginTop: 'var(--space-6)' }}>
-                    <div className="stat-card">
-                        <span className="stat-label">Total Clients</span>
-                        <span className="stat-value">{clients.length}</span>
-                    </div>
-                    <div className="stat-card">
-                        <span className="stat-label">Total Deal Value</span>
-                        <span className="stat-value" style={{ color: 'var(--accent-success)' }}>
-                            ₹{(clients.reduce((sum, c) => sum + (c.budget_max || 0), 0) / 10000000).toFixed(1)}Cr
-                        </span>
-                    </div>
-                    <div className="stat-card">
-                        <span className="stat-label">Top Location</span>
-                        <span className="stat-value" style={{ fontSize: 'var(--text-xl)' }}>
-                            {(() => {
-                                const locations = clients.map(c => c.location).filter(Boolean);
-                                if (locations.length === 0) return '-';
-                                const counts = {};
-                                locations.forEach(l => counts[l] = (counts[l] || 0) + 1);
-                                return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
-                            })()}
-                        </span>
+            {/* Add Client Modal */}
+            {showAddForm && (
+                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowAddForm(false)}>
+                    <div className="modal">
+                        <div className="modal-header">
+                            <h2 className="modal-title">Add New Client</h2>
+                            <button className="btn-icon" onClick={() => setShowAddForm(false)}>✕</button>
+                        </div>
+                        <form onSubmit={handleAdd}>
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label className="form-label">Name *</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={newClient.name}
+                                        onInput={(e) => setNewClient(c => ({ ...c, name: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Phone</label>
+                                        <input
+                                            type="tel"
+                                            className="form-input"
+                                            value={newClient.phone}
+                                            onInput={(e) => setNewClient(c => ({ ...c, phone: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-input"
+                                            value={newClient.email}
+                                            onInput={(e) => setNewClient(c => ({ ...c, email: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Location</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={newClient.location}
+                                        onInput={(e) => setNewClient(c => ({ ...c, location: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary">Add Client</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

@@ -23,31 +23,60 @@ const maskEmail = (email) => {
  * SPEED: Virtual list for large datasets, optimistic updates
  * SUSTAINABILITY: Minimal re-renders with careful state management
  */
-export default function Leads() {
+/**
+ * Leads Component - Supports New, Warm, and Archived views
+ */
+export default function Leads({ mode = 'new' }) {
     const {
-        leads, fetchLeads, isLoading,
+        leads, warmLeads, fetchLeads, fetchWarmLeads, isLoading,
         isModalOpen, openModal, closeModal, selectedLead, setSelectedLead,
-        updateLeadStatus, user
+        updateLeadStatus, convertLeadToClient, rejectLead, user
     } = useStore();
 
-    const [viewMode, setViewMode] = useState('pipeline');
+    const [viewMode, setViewMode] = useState(mode === 'warm' ? 'table' : 'pipeline'); // Warm/Archive default to table
     const [filter, setFilter] = useState({ status: '', search: '' });
 
     const isAdmin = user?.role === 'admin';
 
+    // Select data source and fetch action based on mode
+    const dataSource = mode === 'warm' ? warmLeads : leads;
+
     useEffect(() => {
-        fetchLeads();
-    }, []);
+        if (mode === 'warm') {
+            fetchWarmLeads();
+        } else if (mode === 'archived') {
+            fetchLeads({ status: 'rejected' });
+        } else {
+            // New/Active leads (default)
+            // If we want ONLY 'new' status, passing status='new' would filter strict
+            // But usually 'New Leads' dashboard might mean active pipeline?
+            // User said "rename... as new leads", implying the main pipeline
+            // If we strictly filter status='new', they won't see other active stages.
+            // So we'll fetch all non-rejected, non-client if possible?
+            // Or just fetch all and let frontend filter?
+            // Existing default fetchLeads gets everything (unless filtered by API).
+            // Let's stick to default fetchLeads for now.
+            fetchLeads();
+        }
+    }, [mode]);
 
     // Group leads by status for pipeline view
     const leadsByStatus = LEAD_STATUSES.reduce((acc, status) => {
-        acc[status.id] = leads.filter(lead => lead.status === status.id);
+        acc[status.id] = dataSource.filter(lead => lead.status === status.id);
         return acc;
     }, {});
 
     // Filtered leads for table view
-    const filteredLeads = leads.filter(lead => {
+    const filteredLeads = dataSource.filter(lead => {
+        // Strict status filter if provided in UI
         if (filter.status && lead.status !== filter.status) return false;
+
+        // Mode specific filtering (if data source is mixed)
+        // For 'new' mode (active pipeline), hide rejected/client/warm if the API returned them
+        if (mode === 'new') {
+            if (lead.status === 'rejected' || lead.status === 'client' || (lead.escalated === 1 && !isAdmin)) return false;
+        }
+
         if (filter.search) {
             const search = filter.search.toLowerCase();
             return lead.name?.toLowerCase().includes(search) ||
@@ -60,15 +89,20 @@ export default function Leads() {
         await updateLeadStatus(leadId, newStatus);
     };
 
-    // Employee can only add leads, not view all
-    if (!isAdmin) {
+    // Employee can only add leads, not view all (unless in their own view? keeping existing logic)
+    if (!isAdmin && mode !== 'new') {
+        return <div className="content-section">Access Denied</div>;
+    }
+
+    // Employee view handling (unchanged)
+    if (!isAdmin && mode === 'new') {
+        // ... (existing employee view logic or return logic if handled below)
+        // The original code returned early for non-admin. We keep that.
         return (
             <div className="content-section">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
                     <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>Add Lead</h1>
                 </div>
-
-                {/* Employee Lead Entry Form */}
                 <div className="card" style={{ maxWidth: '600px' }}>
                     <div className="card-header">
                         <h2 className="card-title">Enter New Lead Details</h2>
@@ -79,29 +113,41 @@ export default function Leads() {
         );
     }
 
+    const getTitle = () => {
+        switch (mode) {
+            case 'warm': return '🔥 Warm Leads (Escalated)';
+            case 'archived': return '🗑️ Archived / Rejected Leads';
+            default: return 'New Leads';
+        }
+    };
+
     return (
         <div className="content-section">
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
-                <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>Leads</h1>
+                <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{getTitle()}</h1>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                    <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
-                        <button
-                            className={`btn ${viewMode === 'pipeline' ? 'btn-primary' : 'btn-secondary'}`}
-                            onClick={() => setViewMode('pipeline')}
-                        >
-                            Pipeline
+                    {mode === 'new' && (
+                        <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+                            <button
+                                className={`btn ${viewMode === 'pipeline' ? 'btn-primary' : 'btn-secondary'}`}
+                                onClick={() => setViewMode('pipeline')}
+                            >
+                                Pipeline
+                            </button>
+                            <button
+                                className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-secondary'}`}
+                                onClick={() => setViewMode('table')}
+                            >
+                                Table
+                            </button>
+                        </div>
+                    )}
+                    {mode === 'new' && (
+                        <button className="btn btn-primary" onClick={openModal}>
+                            + New Lead
                         </button>
-                        <button
-                            className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-secondary'}`}
-                            onClick={() => setViewMode('table')}
-                        >
-                            Table
-                        </button>
-                    </div>
-                    <button className="btn btn-primary" onClick={openModal}>
-                        + New Lead
-                    </button>
+                    )}
                 </div>
             </div>
 
@@ -115,22 +161,24 @@ export default function Leads() {
                     onInput={(e) => setFilter(f => ({ ...f, search: e.target.value }))}
                     style={{ flex: 1, maxWidth: '400px' }}
                 />
-                <select
-                    className="form-select"
-                    value={filter.status}
-                    onChange={(e) => setFilter(f => ({ ...f, status: e.target.value }))}
-                >
-                    <option value="">All Statuses</option>
-                    {LEAD_STATUSES.map(s => (
-                        <option key={s.id} value={s.id}>{s.label}</option>
-                    ))}
-                </select>
+                {mode === 'new' && (
+                    <select
+                        className="form-select"
+                        value={filter.status}
+                        onChange={(e) => setFilter(f => ({ ...f, status: e.target.value }))}
+                    >
+                        <option value="">All Statuses</option>
+                        {LEAD_STATUSES.map(s => (
+                            <option key={s.id} value={s.id}>{s.label}</option>
+                        ))}
+                    </select>
+                )}
             </div>
 
-            {isLoading && leads.length === 0 ? (
+            {isLoading && dataSource.length === 0 ? (
                 <div className="loading" />
-            ) : viewMode === 'pipeline' ? (
-                /* Pipeline View */
+            ) : viewMode === 'pipeline' && mode === 'new' ? (
+                /* Pipeline View (Only for New/Active Leads) */
                 <div className="pipeline" style={{ width: '100%' }}>
                     {LEAD_STATUSES.map(status => (
                         <div key={status.id} className="pipeline-column">
@@ -161,17 +209,12 @@ export default function Leads() {
                                         )}
                                     </div>
                                 ))}
-                                {leadsByStatus[status.id]?.length === 0 && (
-                                    <div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
-                                        No leads
-                                    </div>
-                                )}
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
-                /* Table View */
+                /* Table View (Default for Warm/Archive) */
                 <div className="card full-width">
                     <div className="table-container">
                         <table>
@@ -182,7 +225,7 @@ export default function Leads() {
                                     <th>Location</th>
                                     <th>Budget</th>
                                     <th>Status</th>
-                                    <th>Source</th>
+                                    {mode === 'warm' && <th>Escalated Info</th>}
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -193,33 +236,58 @@ export default function Leads() {
                                         <td>{lead.phone || '-'}</td>
                                         <td>{lead.location || '-'}</td>
                                         <td>
-                                            {lead.budget_min && lead.budget_max
-                                                ? `₹${(lead.budget_min / 100000).toFixed(0)}L - ₹${(lead.budget_max / 100000).toFixed(0)}L`
-                                                : lead.budget_max
-                                                    ? `Up to ₹${(lead.budget_max / 100000).toFixed(0)}L`
-                                                    : '-'
+                                            {lead.budget_max
+                                                ? `₹${(lead.budget_max / 100000).toFixed(0)}L`
+                                                : '-'
                                             }
                                         </td>
                                         <td>
-                                            <select
-                                                className="form-select"
-                                                value={lead.status}
-                                                onChange={(e) => handleStatusChange(lead.id, e.target.value)}
-                                                style={{ padding: 'var(--space-1) var(--space-2)', fontSize: 'var(--text-xs)' }}
-                                            >
-                                                {LEAD_STATUSES.map(s => (
-                                                    <option key={s.id} value={s.id}>{s.label}</option>
-                                                ))}
-                                            </select>
+                                            {mode === 'new' ? (
+                                                <select
+                                                    className="form-select"
+                                                    value={lead.status}
+                                                    onChange={(e) => handleStatusChange(lead.id, e.target.value)}
+                                                    style={{ padding: 'var(--space-1) var(--space-2)', fontSize: 'var(--text-xs)' }}
+                                                >
+                                                    {LEAD_STATUSES.map(s => (
+                                                        <option key={s.id} value={s.id}>{s.label}</option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <span className={`status-badge ${lead.status}`}>{lead.status}</span>
+                                            )}
                                         </td>
-                                        <td>{lead.source_name || '-'}</td>
+                                        {mode === 'warm' && (
+                                            <td style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                                {lead.interest ? `Interested in ${lead.interest}` : '-'}
+                                            </td>
+                                        )}
                                         <td>
-                                            <button
-                                                className="btn-icon"
-                                                onClick={() => { setSelectedLead(lead); openModal(); }}
-                                            >
-                                                ✏️
-                                            </button>
+                                            {mode === 'warm' ? (
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button
+                                                        className="btn btn-sm btn-primary"
+                                                        onClick={() => convertLeadToClient(lead.id)}
+                                                        title="Convert to Client"
+                                                    >
+                                                        Convert
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm btn-danger"
+                                                        onClick={() => rejectLead(lead.id)}
+                                                        title="Reject / Archive"
+                                                    >
+                                                        Reject
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    className="btn-icon"
+                                                    onClick={() => { setSelectedLead(lead); openModal(); }}
+                                                >
+                                                    ✏️
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
@@ -228,7 +296,7 @@ export default function Leads() {
                         {filteredLeads.length === 0 && (
                             <div className="empty-state">
                                 <div className="empty-state-icon">📭</div>
-                                <p>No leads found. Add your first lead!</p>
+                                <p>No leads found in this view.</p>
                             </div>
                         )}
                     </div>

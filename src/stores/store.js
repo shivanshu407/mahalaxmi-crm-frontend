@@ -120,8 +120,56 @@ export const useStore = create(
                     const leads = await api('/leads?escalated=1');
                     set({ warmLeads: leads });
                 } catch (error) {
-                    // Fail silently for non-admins or errors
                     console.error('Failed to fetch warm leads:', error);
+                }
+            },
+
+            // Clients
+            clients: [],
+            fetchClients: async (search = '') => {
+                try {
+                    const query = search ? `?search=${search}` : '';
+                    const clients = await api(`/clients${query}`);
+                    set({ clients });
+                } catch (error) {
+                    console.error('Failed to fetch clients:', error);
+                }
+            },
+
+            createClient: async (data) => {
+                try {
+                    await api('/clients', {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                    });
+                    get().fetchClients();
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
+            // Lead Workflows
+            convertLeadToClient: async (id) => {
+                try {
+                    await api(`/leads/${id}/convert-client`, { method: 'PUT' });
+                    // Refresh all lists
+                    get().fetchLeads();
+                    get().fetchWarmLeads();
+                    get().fetchClients();
+                } catch (error) {
+                    set({ error: error.message });
+                }
+            },
+
+            rejectLead: async (id) => {
+                try {
+                    await api(`/leads/${id}/reject`, { method: 'PATCH' });
+                    // Refresh lists
+                    get().fetchLeads();
+                    get().fetchWarmLeads();
+                } catch (error) {
+                    set({ error: error.message });
                 }
             },
 

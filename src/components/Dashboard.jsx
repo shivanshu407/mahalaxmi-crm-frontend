@@ -64,35 +64,6 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* Warm Leads Section - Admin only */}
-            {isAdmin && warmLeads?.length > 0 && (
-                <div className="card full-width" style={{ marginBottom: 'var(--space-6)', border: '1px solid var(--accent-primary)' }}>
-                    <div className="card-header">
-                        <h2 className="card-title" style={{ color: 'var(--accent-primary)' }}>🔥 Warm Leads (Escalated)</h2>
-                        <span className="pipeline-count">{warmLeads.length}</span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
-                        {warmLeads.map(lead => (
-                            <div key={lead.id} style={{
-                                background: 'rgba(59, 130, 246, 0.05)',
-                                padding: 'var(--space-4)',
-                                borderRadius: 'var(--radius-md)',
-                                border: '1px solid rgba(59, 130, 246, 0.2)'
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                    <span style={{ fontWeight: 'bold' }}>{lead.name}</span>
-                                    <span className={`status-badge ${lead.status}`}>{lead.status}</span>
-                                </div>
-                                <div style={{ fontSize: '14px', marginBottom: '4px' }}>📞 {lead.phone}</div>
-                                {lead.interest && <div style={{ fontSize: '14px', marginBottom: '4px' }}>🏠 {lead.interest}</div>}
-                                {lead.budget_max && <div style={{ fontSize: '14px', marginBottom: '8px' }}>💰 {(lead.budget_max / 100000).toFixed(0)}L</div>}
-                                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>📍 {lead.location}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
             {/* Employee Welcome Card */}
             {!isAdmin && (
                 <div className="card" style={{ marginBottom: 'var(--space-6)', textAlign: 'center', padding: 'var(--space-8)' }}>

@@ -14,9 +14,11 @@ export default function Sidebar() {
     const navItems = isAdmin
         ? [
             { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-            { id: 'leads', label: 'Leads', icon: '👥' },
-            { id: 'followups', label: 'Follow-ups', icon: '📞' },
+            { id: 'leads', label: 'New Leads', icon: '👥' },
+            { id: 'warm-leads', label: 'Warm Leads', icon: '🔥' },
             { id: 'clients', label: 'Clients', icon: '🏆' },
+            { id: 'followups', label: 'Follow-ups', icon: '📞' },
+            { id: 'archived-leads', label: 'Archives', icon: '🗑️' },
             { id: 'team', label: 'Team', icon: '👔' },
         ]
         : [

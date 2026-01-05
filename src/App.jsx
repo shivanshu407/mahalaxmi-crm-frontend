@@ -33,7 +33,11 @@ export default function App() {
     const renderView = () => {
         switch (currentView) {
             case 'leads':
-                return <Leads />;
+                return <Leads mode="new" />;
+            case 'warm-leads':
+                return <Leads mode="warm" />;
+            case 'archived-leads':
+                return <Leads mode="archived" />;
             case 'followups':
                 return <FollowUps />;
             case 'clients':
