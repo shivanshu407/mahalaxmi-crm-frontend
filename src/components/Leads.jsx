@@ -300,13 +300,36 @@ export default function Leads({ mode = 'new' }) {
                                                         🗑️
                                                     </button>
                                                 </div>
-                                            ) : (
+                                            ) : mode === 'archived' ? (
                                                 <button
-                                                    className="btn-icon"
-                                                    onClick={() => { setSelectedLead(lead); openModal(); }}
+                                                    className="btn btn-sm"
+                                                    style={{ background: '#666' }}
+                                                    onClick={() => {
+                                                        if (confirm('Delete this lead permanently?')) deleteLead(lead.id);
+                                                    }}
+                                                    title="Delete Permanently"
                                                 >
-                                                    ✏️
+                                                    🗑️ Delete
                                                 </button>
+                                            ) : (
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button
+                                                        className="btn-icon"
+                                                        onClick={() => { setSelectedLead(lead); openModal(); }}
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        style={{ background: '#666' }}
+                                                        onClick={() => {
+                                                            if (confirm('Delete this lead permanently?')) deleteLead(lead.id);
+                                                        }}
+                                                        title="Delete"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </div>
                                             )}
                                         </td>
                                     </tr>
