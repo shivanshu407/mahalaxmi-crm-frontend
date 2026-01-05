@@ -7,7 +7,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+// Remove trailing slash from API URL if present
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
+console.log('API Base URL:', API_BASE_URL);
 
 // API helper with error handling
 const api = async (path, options = {}) => {
@@ -17,8 +20,11 @@ const api = async (path, options = {}) => {
         ...(token && { Authorization: `Bearer ${token}` }),
     };
 
+    const url = `${API_BASE_URL}/api/v1${path}`;
+    console.log('Fetching:', url);
+
     try {
-        const res = await fetch(`${API_BASE_URL}/api/v1${path}`, { ...options, headers });
+        const res = await fetch(url, { ...options, headers });
 
         if (!res.ok) {
             const error = await res.json().catch(() => ({ error: 'Request failed' }));
