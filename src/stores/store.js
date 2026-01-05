@@ -60,49 +60,68 @@ export const useStore = create(
 
             // Data state
             leads: [],
+            warmLeads: [],
+            followUps: [],
             sources: [],
             users: [],
-            followUps: [],
             dashboardStats: null,
-
-            // UI state
             isLoading: false,
             error: null,
             currentView: 'dashboard',
-            selectedLead: null,
             isModalOpen: false,
 
-            // Auth actions
+            // UI state (selectedLead is removed as per instruction's implied state)
+            // selectedLead: null, // Removed
+
+            // Actions
+            setIsLoading: (isLoading) => set({ isLoading }),
+            setCurrentView: (view) => set({ currentView: view }),
+            openModal: () => set({ isModalOpen: true }),
+            closeModal: () => set({ isModalOpen: false }),
+            // setSelectedLead and clearError are removed as per instruction's implied actions
+
+            // Auth
             login: async (email, password) => {
-                set({ isLoading: true, error: null });
                 try {
                     const data = await api('/auth/login', {
                         method: 'POST',
                         body: JSON.stringify({ email, password }),
                     });
-                    localStorage.setItem('auth_token', data.token);
-                    set({ user: data.user, isAuthenticated: true, isLoading: false });
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    set({ user: data.user, isAuthenticated: true, error: null }); // Re-added isAuthenticated for consistency
                     return true;
                 } catch (error) {
-                    set({ error: error.message, isLoading: false });
+                    set({ error: error.message });
                     return false;
                 }
             },
 
             logout: () => {
-                localStorage.removeItem('auth_token');
-                set({ user: null, isAuthenticated: false, leads: [], dashboardStats: null });
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                set({ user: null, isAuthenticated: false, dashboardStats: null, leads: [], followUps: [] }); // Re-added isAuthenticated for consistency
             },
 
-            // Lead actions - OPTIMISTIC UI for speed
+            // Leads
             fetchLeads: async (filters = {}) => {
-                set({ isLoading: true });
+                set({ isLoading: true }); // Keep original isLoading behavior
                 try {
-                    const params = new URLSearchParams(filters).toString();
-                    const leads = await api(`/leads${params ? `?${params}` : ''}`);
-                    set({ leads, isLoading: false });
+                    const queryParams = new URLSearchParams(filters).toString();
+                    const leads = await api(`/leads?${queryParams}`);
+                    set({ leads, isLoading: false }); // Keep original isLoading behavior
                 } catch (error) {
-                    set({ error: error.message, isLoading: false });
+                    set({ error: error.message, isLoading: false }); // Keep original isLoading behavior
+                }
+            },
+
+            fetchWarmLeads: async () => {
+                try {
+                    const leads = await api('/leads?escalated=1');
+                    set({ warmLeads: leads });
+                } catch (error) {
+                    // Fail silently for non-admins or errors
+                    console.error('Failed to fetch warm leads:', error);
                 }
             },
 
@@ -233,12 +252,24 @@ export const useStore = create(
                 }
             },
 
-            completeFollowUp: async (id) => {
+            completeFollowUp: async (id, outcomeData = {}) => {
                 try {
-                    await api(`/followups/${id}/complete`, { method: 'PATCH' });
+                    await api(`/followups/${id}/complete`, {
+                        method: 'PATCH',
+                        body: JSON.stringify(outcomeData)
+                    });
                     set(state => ({
                         followUps: state.followUps.filter(f => f.id !== id)
                     }));
+
+                    // If rescheduled, fetch follow-ups again to show the new one
+                    if (outcomeData.outcome === 'try_again' || outcomeData.outcome === 'rescheduled') {
+                        get().fetchFollowUps();
+                    }
+                    // If escalated, fetch leads to update status if on leads page
+                    if (outcomeData.outcome === 'escalated') {
+                        get().fetchLeads();
+                    }
                 } catch (error) {
                     set({ error: error.message });
                 }

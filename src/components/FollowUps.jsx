@@ -3,11 +3,25 @@ import { useStore } from '../stores/store';
 
 /**
  * Follow-ups Component
- * RELIABILITY: Shows pending follow-ups with quick complete action
+ * FEATURES: Searchable lead selection, lead details, outcome workflow
  */
 export default function FollowUps() {
     const { followUps, fetchFollowUps, completeFollowUp, createFollowUp, leads, fetchLeads, isLoading, user } = useStore();
+
+    // Modal & Form States
     const [showAddForm, setShowAddForm] = useState(false);
+    const [showOutcomeModal, setShowOutcomeModal] = useState(null); // ID of follow-up being completed
+
+    // Outcome State
+    const [outcomeData, setOutcomeData] = useState({
+        outcome: 'completed',
+        notes: '',
+        reschedule_date: ''
+    });
+
+    // Add Follow-up State
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedLead, setSelectedLead] = useState(null);
     const [newFollowUp, setNewFollowUp] = useState({
         lead_id: '',
         scheduled_at: '',
@@ -19,18 +33,52 @@ export default function FollowUps() {
 
     useEffect(() => {
         fetchFollowUps(true);
-        if (isAdmin) fetchLeads();
+        fetchLeads(); // Always fetch leads to select from
     }, []);
 
-    const handleComplete = async (id) => {
-        await completeFollowUp(id);
+    // Filter leads for search
+    const filteredLeads = searchTerm
+        ? leads.filter(l => l.name.toLowerCase().includes(searchTerm.toLowerCase()) || l.phone?.includes(searchTerm))
+        : [];
+
+    const handleSelectLead = (lead) => {
+        setSelectedLead(lead);
+        setNewFollowUp(prev => ({ ...prev, lead_id: lead.id }));
+        setSearchTerm(lead.name);
     };
 
     const handleAdd = async (e) => {
         e.preventDefault();
+        if (!selectedLead) return alert('Please select a lead');
+
         await createFollowUp(newFollowUp);
         setShowAddForm(false);
+        resetAddForm();
+    };
+
+    const resetAddForm = () => {
         setNewFollowUp({ lead_id: '', scheduled_at: '', type: 'call', notes: '' });
+        setSelectedLead(null);
+        setSearchTerm('');
+    };
+
+    const handleOutcomeSubmit = async (e) => {
+        e.preventDefault();
+        if (!showOutcomeModal) return;
+
+        await completeFollowUp(showOutcomeModal, outcomeData);
+        setShowOutcomeModal(null);
+        setOutcomeData({ outcome: 'completed', notes: '', reschedule_date: '' });
+    };
+
+    const getOutcomeLabel = (type) => {
+        switch (type) {
+            case 'completed': return '✅ Completed';
+            case 'try_again': return '🔄 Try Again';
+            case 'rescheduled': return '📅 Reschedule';
+            case 'escalated': return '🔥 Escalate to Admin';
+            default: return type;
+        }
     };
 
     // Group by date
@@ -87,22 +135,34 @@ export default function FollowUps() {
                                             <button
                                                 className="btn btn-success"
                                                 style={{ padding: 'var(--space-2)' }}
-                                                onClick={() => handleComplete(followUp.id)}
-                                                title="Mark as done"
+                                                onClick={() => setShowOutcomeModal(followUp.id)}
+                                                title="Complete"
                                             >
                                                 ✓
                                             </button>
                                             <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: '600', marginBottom: 'var(--space-1)' }}>
-                                                    {followUp.lead_name || 'Lead'}
+                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                    <div style={{ fontWeight: '600' }}>
+                                                        {followUp.lead_name || 'Lead'}
+                                                        {followUp.lead_phone && <span style={{ color: 'var(--text-muted)', fontWeight: 'normal', marginLeft: '8px' }}>({followUp.lead_phone})</span>}
+                                                    </div>
+                                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                                                        {followUp.lead_location && `📍 ${followUp.lead_location}`}
+                                                    </div>
                                                 </div>
-                                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', display: 'flex', gap: 'var(--space-3)' }}>
-                                                    <span>{followUp.type}</span>
+                                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', display: 'flex', gap: 'var(--space-3)', marginTop: '4px' }}>
+                                                    <span style={{ textTransform: 'capitalize' }}>{followUp.type}</span>
+                                                    <span>•</span>
                                                     <span>{new Date(followUp.scheduled_at).toLocaleString()}</span>
                                                 </div>
+                                                {followUp.lead_interest && (
+                                                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--accent-primary)', marginTop: '4px' }}>
+                                                        Interested in: {followUp.lead_interest} {followUp.lead_budget_max && `(Budget: ${(followUp.lead_budget_max / 100000).toFixed(0)}L)`}
+                                                    </div>
+                                                )}
                                                 {followUp.notes && (
-                                                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 'var(--space-1)' }}>
-                                                        {followUp.notes}
+                                                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 'var(--space-2)', fontStyle: 'italic' }}>
+                                                        "{followUp.notes}"
                                                     </div>
                                                 )}
                                             </div>
@@ -117,7 +177,7 @@ export default function FollowUps() {
                         <div className="card full-width">
                             <div className="empty-state">
                                 <div className="empty-state-icon">📅</div>
-                                <p>No pending follow-ups. Great job staying on top of things!</p>
+                                <p>No pending follow-ups. Schedule one to get started!</p>
                             </div>
                         </div>
                     )}
@@ -134,20 +194,57 @@ export default function FollowUps() {
                         </div>
                         <form onSubmit={handleAdd}>
                             <div className="modal-body">
-                                <div className="form-group">
-                                    <label className="form-label">Lead *</label>
-                                    <select
-                                        className="form-select"
-                                        value={newFollowUp.lead_id}
-                                        onChange={(e) => setNewFollowUp(f => ({ ...f, lead_id: parseInt(e.target.value) }))}
+                                {/* Searchable Lead Selector */}
+                                <div className="form-group" style={{ position: 'relative' }}>
+                                    <label className="form-label">Search Lead *</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        placeholder="Type name or phone number..."
+                                        value={searchTerm}
+                                        onInput={(e) => {
+                                            setSearchTerm(e.target.value);
+                                            if (!e.target.value) setSelectedLead(null);
+                                        }}
                                         required
-                                    >
-                                        <option value="">Select lead</option>
-                                        {leads.map(lead => (
-                                            <option key={lead.id} value={lead.id}>{lead.name}</option>
-                                        ))}
-                                    </select>
+                                    />
+                                    {searchTerm && !selectedLead && filteredLeads.length > 0 && (
+                                        <div style={{
+                                            position: 'absolute', top: '100%', left: 0, right: 0,
+                                            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                                            borderRadius: 'var(--radius-md)', zIndex: 10, maxHeight: '200px', overflowY: 'auto'
+                                        }}>
+                                            {filteredLeads.map(lead => (
+                                                <div
+                                                    key={lead.id}
+                                                    style={{ padding: '8px', cursor: 'pointer', borderBottom: '1px solid var(--border-color)' }}
+                                                    onClick={() => handleSelectLead(lead)}
+                                                >
+                                                    <div>{lead.name}</div>
+                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{lead.phone} • {lead.location}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* Selected Lead Details Panel */}
+                                {selectedLead && (
+                                    <div style={{
+                                        background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)',
+                                        marginBottom: '16px', fontSize: '14px'
+                                    }}>
+                                        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{selectedLead.name}</div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                            <div>📞 {selectedLead.phone}</div>
+                                            <div>📍 {selectedLead.location || '-'}</div>
+                                            <div>🏠 {selectedLead.interest || '-'}</div>
+                                            <div>💰 {selectedLead.budget_max ? `${(selectedLead.budget_max / 100000).toFixed(0)}L` : '-'}</div>
+                                            <div>🎯 {selectedLead.motive_to_buy || '-'}</div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label className="form-label">Date & Time *</label>
@@ -186,12 +283,74 @@ export default function FollowUps() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)}>
-                                    Cancel
-                                </button>
-                                <button type="submit" className="btn btn-primary">
-                                    Schedule
-                                </button>
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary" disabled={!selectedLead}>Schedule</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Outcome Modal */}
+            {showOutcomeModal && (
+                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowOutcomeModal(null)}>
+                    <div className="modal">
+                        <div className="modal-header">
+                            <h2 className="modal-title">Complete Follow-up</h2>
+                            <button className="btn-icon" onClick={() => setShowOutcomeModal(null)}>✕</button>
+                        </div>
+                        <form onSubmit={handleOutcomeSubmit}>
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label className="form-label">Outcome *</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                        {['completed', 'try_again', 'rescheduled', 'escalated'].map(type => (
+                                            <div
+                                                key={type}
+                                                onClick={() => setOutcomeData(d => ({ ...d, outcome: type }))}
+                                                style={{
+                                                    padding: '10px',
+                                                    border: `1px solid ${outcomeData.outcome === type ? 'var(--accent-primary)' : 'var(--border-color)'}`,
+                                                    borderRadius: 'var(--radius-md)',
+                                                    background: outcomeData.outcome === type ? 'rgba(59, 130, 246, 0.1)' : 'var(--bg-secondary)',
+                                                    cursor: 'pointer',
+                                                    textAlign: 'center',
+                                                    fontWeight: '500'
+                                                }}
+                                            >
+                                                {getOutcomeLabel(type)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {(outcomeData.outcome === 'try_again' || outcomeData.outcome === 'rescheduled') && (
+                                    <div className="form-group">
+                                        <label className="form-label">Next Follow-up Date *</label>
+                                        <input
+                                            type="datetime-local"
+                                            className="form-input"
+                                            value={outcomeData.reschedule_date}
+                                            onInput={(e) => setOutcomeData(d => ({ ...d, reschedule_date: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="form-group">
+                                    <label className="form-label">Outcome Notes</label>
+                                    <textarea
+                                        className="form-textarea"
+                                        value={outcomeData.notes}
+                                        onInput={(e) => setOutcomeData(d => ({ ...d, notes: e.target.value }))}
+                                        placeholder="Result of the interaction..."
+                                        rows="3"
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowOutcomeModal(null)}>Cancel</button>
+                                <button type="submit" className="btn btn-success">Complete</button>
                             </div>
                         </form>
                     </div>
