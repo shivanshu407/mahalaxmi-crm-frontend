@@ -164,35 +164,7 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* Pipeline Summary - Admin only */}
-            {isAdmin && (
-                <div className="card" style={{ marginBottom: 'var(--space-6)', width: '100%' }}>
-                    <div className="card-header">
-                        <h2 className="card-title">Lead Pipeline</h2>
-                        <button className="btn btn-secondary" onClick={() => setCurrentView('leads')}>
-                            View All →
-                        </button>
-                    </div>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-                        {['new', 'contacted', 'qualified', 'proposal', 'negotiation', 'won', 'lost'].map(status => (
-                            <div key={status} style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 'var(--space-2)',
-                                padding: 'var(--space-2) var(--space-3)',
-                                background: 'var(--bg-tertiary)',
-                                borderRadius: 'var(--radius-md)',
-                                flex: '1 1 auto',
-                                minWidth: '120px',
-                                justifyContent: 'center'
-                            }}>
-                                <span className={`status-badge ${status}`}>{status}</span>
-                                <span style={{ fontWeight: '600' }}>{stats.leads_by_status?.[status] || 0}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+
 
             {/* Two Column Layout - Admin only */}
             {isAdmin && (
