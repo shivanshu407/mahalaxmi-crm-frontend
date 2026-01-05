@@ -173,6 +173,37 @@ export const useStore = create(
                 }
             },
 
+            // Site Visits
+            visits: [],
+            fetchVisits: async (fromDate, toDate) => {
+                try {
+                    let url = '/visits';
+                    const params = [];
+                    if (fromDate) params.push(`from_date=${fromDate}`);
+                    if (toDate) params.push(`to_date=${toDate}`);
+                    if (params.length) url += '?' + params.join('&');
+
+                    const visits = await api(url);
+                    set({ visits });
+                } catch (error) {
+                    console.error('Failed to fetch visits:', error);
+                }
+            },
+
+            scheduleVisit: async (data) => {
+                try {
+                    await api('/visits', {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                    });
+                    get().fetchVisits();
+                    return true;
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
             createLead: async (leadData) => {
                 const tempId = Date.now();
                 const optimisticLead = { ...leadData, id: tempId, status: 'new', created_at: new Date().toISOString() };

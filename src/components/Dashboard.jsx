@@ -7,12 +7,17 @@ import { useStore } from '../stores/store';
  * SUSTAINABILITY: Minimal DOM nodes for lower memory usage
  */
 export default function Dashboard() {
-    const { dashboardStats, fetchDashboard, warmLeads, fetchWarmLeads, isLoading, setCurrentView, user } = useStore();
+    const { dashboardStats, fetchDashboard, warmLeads, fetchWarmLeads, visits, fetchVisits, isLoading, setCurrentView, user } = useStore();
+
+    // Get today and tomorrow dates for visit filter
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
     useEffect(() => {
         fetchDashboard();
         if (user?.role === 'admin') {
             fetchWarmLeads();
+            fetchVisits(today, tomorrow);
         }
     }, [user]);
 
@@ -60,6 +65,43 @@ export default function Dashboard() {
                     <div className="stat-card">
                         <span className="stat-label">Pending Tasks</span>
                         <span className="stat-value">{stats.pending_tasks}</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Upcoming Site Visits - Admin only */}
+            {isAdmin && visits?.length > 0 && (
+                <div className="card full-width" style={{ marginBottom: 'var(--space-6)', border: '1px solid var(--accent-warning)' }}>
+                    <div className="card-header">
+                        <h2 className="card-title" style={{ color: 'var(--accent-warning)' }}>📅 Upcoming Site Visits (Today & Tomorrow)</h2>
+                        <span className="pipeline-count">{visits.length}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', padding: 'var(--space-4)' }}>
+                        {visits.map(visit => (
+                            <div key={visit.id} style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: 'var(--space-3)',
+                                background: 'var(--bg-tertiary)',
+                                borderRadius: 'var(--radius-md)'
+                            }}>
+                                <div>
+                                    <strong>{visit.lead_name}</strong>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                        📞 {visit.lead_phone} • 📍 {visit.location || visit.lead_location || 'TBD'}
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                                        {new Date(visit.scheduled_at).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                    </div>
+                                    <div style={{ fontSize: '14px' }}>
+                                        {new Date(visit.scheduled_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}

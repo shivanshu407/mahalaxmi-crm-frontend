@@ -30,11 +30,13 @@ export default function Leads({ mode = 'new' }) {
     const {
         leads, warmLeads, fetchLeads, fetchWarmLeads, isLoading,
         isModalOpen, openModal, closeModal, selectedLead, setSelectedLead,
-        updateLeadStatus, convertLeadToClient, rejectLead, user
+        updateLeadStatus, convertLeadToClient, rejectLead, scheduleVisit, user
     } = useStore();
 
-    const [viewMode, setViewMode] = useState(mode === 'warm' ? 'table' : 'pipeline'); // Warm/Archive default to table
+    const [viewMode, setViewMode] = useState(mode === 'warm' ? 'table' : 'pipeline');
     const [filter, setFilter] = useState({ status: '', search: '' });
+    const [showVisitModal, setShowVisitModal] = useState(null); // lead ID to schedule
+    const [visitData, setVisitData] = useState({ scheduled_at: '', location: '', notes: '' });
 
     const isAdmin = user?.role === 'admin';
 
@@ -273,6 +275,14 @@ export default function Leads({ mode = 'new' }) {
                                                         Convert
                                                     </button>
                                                     <button
+                                                        className="btn btn-sm"
+                                                        style={{ background: 'var(--accent-warning)', color: 'white' }}
+                                                        onClick={() => setShowVisitModal(lead)}
+                                                        title="Schedule Site Visit"
+                                                    >
+                                                        📅 Visit
+                                                    </button>
+                                                    <button
                                                         className="btn btn-sm btn-danger"
                                                         onClick={() => rejectLead(lead.id)}
                                                         title="Reject / Archive"
@@ -305,6 +315,66 @@ export default function Leads({ mode = 'new' }) {
 
             {/* Lead Form Modal */}
             {isModalOpen && <LeadForm />}
+
+            {/* Visit Scheduling Modal */}
+            {showVisitModal && (
+                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowVisitModal(null)}>
+                    <div className="modal">
+                        <div className="modal-header">
+                            <h2 className="modal-title">📅 Schedule Site Visit</h2>
+                            <button className="btn-icon" onClick={() => setShowVisitModal(null)}>✕</button>
+                        </div>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            await scheduleVisit({ ...visitData, lead_id: showVisitModal.id });
+                            setShowVisitModal(null);
+                            setVisitData({ scheduled_at: '', location: '', notes: '' });
+                        }}>
+                            <div className="modal-body">
+                                <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+                                    <strong>{showVisitModal.name}</strong>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                                        {showVisitModal.phone} • {showVisitModal.location}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Visit Date & Time *</label>
+                                    <input
+                                        type="datetime-local"
+                                        className="form-input"
+                                        value={visitData.scheduled_at}
+                                        onInput={(e) => setVisitData(v => ({ ...v, scheduled_at: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Location / Property</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={visitData.location}
+                                        onInput={(e) => setVisitData(v => ({ ...v, location: e.target.value }))}
+                                        placeholder="e.g., Green Valley, Sector 62"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Notes</label>
+                                    <textarea
+                                        className="form-input"
+                                        value={visitData.notes}
+                                        onInput={(e) => setVisitData(v => ({ ...v, notes: e.target.value }))}
+                                        rows="2"
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowVisitModal(null)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary">📅 Schedule Visit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
