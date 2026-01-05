@@ -96,20 +96,57 @@ export default function Leads({ mode = 'new' }) {
         return <div className="content-section">Access Denied</div>;
     }
 
-    // Employee view handling (unchanged)
+    // Employee view handling - show form and their leads
     if (!isAdmin && mode === 'new') {
-        // ... (existing employee view logic or return logic if handled below)
-        // The original code returned early for non-admin. We keep that.
+        const myLeads = leads.filter(lead => lead.assigned_to === user?.id);
+
         return (
             <div className="content-section">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
                     <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>Add Lead</h1>
                 </div>
-                <div className="card" style={{ maxWidth: '600px' }}>
+                <div className="card" style={{ maxWidth: '600px', marginBottom: 'var(--space-6)' }}>
                     <div className="card-header">
                         <h2 className="card-title">Enter New Lead Details</h2>
                     </div>
                     <EmployeeLeadForm />
+                </div>
+
+                {/* My Leads Section */}
+                <div className="card">
+                    <div className="card-header">
+                        <h2 className="card-title">📋 My Submitted Leads ({myLeads.length})</h2>
+                    </div>
+                    {myLeads.length > 0 ? (
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+                                    <th style={{ padding: 'var(--space-3)' }}>Name</th>
+                                    <th style={{ padding: 'var(--space-3)' }}>Location</th>
+                                    <th style={{ padding: 'var(--space-3)' }}>Status</th>
+                                    <th style={{ padding: 'var(--space-3)' }}>Added</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {myLeads.map(lead => (
+                                    <tr key={lead.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: 'var(--space-3)', fontWeight: '500' }}>{lead.name}</td>
+                                        <td style={{ padding: 'var(--space-3)' }}>{lead.location || '-'}</td>
+                                        <td style={{ padding: 'var(--space-3)' }}>
+                                            <span className={`status-badge ${lead.status}`}>{lead.status}</span>
+                                        </td>
+                                        <td style={{ padding: 'var(--space-3)', fontSize: '12px', color: 'var(--text-muted)' }}>
+                                            {new Date(lead.created_at).toLocaleDateString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            No leads submitted yet. Add your first lead above!
+                        </div>
+                    )}
                 </div>
             </div>
         );

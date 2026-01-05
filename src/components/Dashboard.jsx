@@ -106,16 +106,61 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* Employee Welcome Card */}
+            {/* Employee Dashboard */}
             {!isAdmin && (
-                <div className="card" style={{ marginBottom: 'var(--space-6)', textAlign: 'center', padding: 'var(--space-8)' }}>
-                    <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>Welcome, {user?.name || 'Agent'}!</h2>
-                    <p style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
-                        Add new leads and manage your follow-ups from here.
-                    </p>
-                    <button className="btn btn-primary" onClick={() => { setCurrentView('leads'); useStore.getState().openModal(); }}>
-                        + Add New Lead
-                    </button>
+                <div style={{ display: 'grid', gap: 'var(--space-6)' }}>
+                    {/* Welcome + Quick Stats */}
+                    <div className="card" style={{ padding: 'var(--space-6)' }}>
+                        <h2 style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)' }}>
+                            Welcome, {user?.name || 'Agent'}! 👋
+                        </h2>
+                        <div style={{ display: 'flex', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+                            <div style={{ background: 'var(--bg-tertiary)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', flex: 1, textAlign: 'center' }}>
+                                <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                                    {stats.recent_leads?.filter(l => l.assigned_to === user?.id).length || 0}
+                                </div>
+                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>My Leads</div>
+                            </div>
+                            <div style={{ background: 'var(--bg-tertiary)', padding: 'var(--space-4)', borderRadius: 'var(--radius-md)', flex: 1, textAlign: 'center' }}>
+                                <div style={{ fontSize: 'var(--text-2xl)', fontWeight: 'bold', color: 'var(--accent-warning)' }}>
+                                    {stats.upcoming_followups?.filter(f => f.user_id === user?.id).length || 0}
+                                </div>
+                                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>Pending Follow-ups</div>
+                            </div>
+                        </div>
+                        <button className="btn btn-primary" onClick={() => setCurrentView('leads')}>
+                            + Add New Lead
+                        </button>
+                    </div>
+
+                    {/* My Follow-ups */}
+                    {stats.upcoming_followups?.filter(f => f.user_id === user?.id).length > 0 && (
+                        <div className="card">
+                            <div className="card-header">
+                                <h2 className="card-title">📅 My Upcoming Follow-ups</h2>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', padding: 'var(--space-4)' }}>
+                                {stats.upcoming_followups?.filter(f => f.user_id === user?.id).slice(0, 5).map(followup => (
+                                    <div key={followup.id} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: 'var(--space-3)',
+                                        background: 'var(--bg-tertiary)',
+                                        borderRadius: 'var(--radius-md)'
+                                    }}>
+                                        <div>
+                                            <strong>{followup.lead_name}</strong>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{followup.notes}</div>
+                                        </div>
+                                        <div style={{ textAlign: 'right', fontSize: '14px', color: 'var(--accent-warning)' }}>
+                                            {new Date(followup.scheduled_at).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
