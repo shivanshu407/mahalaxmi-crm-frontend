@@ -22,7 +22,7 @@ export default function LeadForm() {
         interest: '',
         motive_to_buy: '',
         contact_person: '',
-        source_id: '',
+        source: '',
         status: 'new',
         assigned_to: '',
     });
@@ -42,7 +42,7 @@ export default function LeadForm() {
                 interest: selectedLead.interest || '',
                 motive_to_buy: selectedLead.motive_to_buy || '',
                 contact_person: selectedLead.contact_person || '',
-                source_id: selectedLead.source_id || '',
+                source: selectedLead.source_name || selectedLead.source || '',
                 status: selectedLead.status || 'new',
                 assigned_to: selectedLead.assigned_to || '',
             });
@@ -63,7 +63,6 @@ export default function LeadForm() {
                 ...formData,
                 budget_min: formData.budget_min ? parseFloat(formData.budget_min) * 100000 : null,
                 budget_max: formData.budget_max ? parseFloat(formData.budget_max) * 100000 : null,
-                source_id: formData.source_id ? parseInt(formData.source_id) : null,
                 assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : null,
             };
 
@@ -172,58 +171,71 @@ export default function LeadForm() {
                             </div>
                         </div>
 
-                        {/* Location and Interest */}
+                        {/* Location and Interest - with custom entry support */}
                         <div className="form-row">
                             <div className="form-group">
                                 <label className="form-label">Location</label>
-                                <select
+                                <input
+                                    type="text"
                                     name="location"
-                                    className="form-select"
+                                    className="form-input"
                                     value={formData.location}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">Select location</option>
+                                    onInput={handleChange}
+                                    placeholder="Type or select location"
+                                    list="location-options"
+                                />
+                                <datalist id="location-options">
                                     {locations.map(loc => (
-                                        <option key={loc} value={loc}>{loc}</option>
+                                        <option key={loc} value={loc} />
                                     ))}
-                                </select>
+                                </datalist>
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Interest</label>
-                                <select
+                                <input
+                                    type="text"
                                     name="interest"
-                                    className="form-select"
+                                    className="form-input"
                                     value={formData.interest}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">Select type</option>
-                                    <option value="1BHK">1 BHK</option>
-                                    <option value="2BHK">2 BHK</option>
-                                    <option value="3BHK">3 BHK</option>
-                                    <option value="4BHK">4 BHK</option>
-                                    <option value="Villa">Villa</option>
-                                    <option value="Plot">Plot</option>
-                                    <option value="Commercial">Commercial</option>
-                                </select>
+                                    onInput={handleChange}
+                                    placeholder="Type or select property type"
+                                    list="interest-options"
+                                />
+                                <datalist id="interest-options">
+                                    <option value="1 BHK" />
+                                    <option value="2 BHK" />
+                                    <option value="3 BHK" />
+                                    <option value="4 BHK" />
+                                    <option value="Villa" />
+                                    <option value="Plot" />
+                                    <option value="Commercial" />
+                                    <option value="Penthouse" />
+                                    <option value="Studio" />
+                                </datalist>
                             </div>
                         </div>
 
-                        {/* Motive and Contact Person */}
+                        {/* Motive to Buy - with custom entry support */}
                         <div className="form-group">
                             <label className="form-label">Motive to Buy</label>
-                            <select
+                            <input
+                                type="text"
                                 name="motive_to_buy"
-                                className="form-select"
+                                className="form-input"
                                 value={formData.motive_to_buy}
-                                onChange={handleChange}
-                            >
-                                <option value="">Select motive</option>
-                                <option value="Investment">Investment</option>
-                                <option value="Self Use">Self Use</option>
-                                <option value="Relocation">Relocation</option>
-                                <option value="Upgrade">Upgrade</option>
-                                <option value="First Home">First Home</option>
-                            </select>
+                                onInput={handleChange}
+                                placeholder="Type or select motive"
+                                list="motive-options"
+                            />
+                            <datalist id="motive-options">
+                                <option value="Investment" />
+                                <option value="Self Use" />
+                                <option value="Relocation" />
+                                <option value="Upgrade" />
+                                <option value="First Home" />
+                                <option value="Rental Income" />
+                                <option value="Office Space" />
+                            </datalist>
                         </div>
 
                         <div className="form-row">
@@ -240,17 +252,14 @@ export default function LeadForm() {
                             </div>
                             <div className="form-group">
                                 <label className="form-label">Source</label>
-                                <select
-                                    name="source_id"
-                                    className="form-select"
-                                    value={formData.source_id}
-                                    onChange={handleChange}
-                                >
-                                    <option value="">Select source</option>
-                                    {sources.map(source => (
-                                        <option key={source.id} value={source.id}>{source.name}</option>
-                                    ))}
-                                </select>
+                                <input
+                                    type="text"
+                                    name="source"
+                                    className="form-input"
+                                    value={formData.source}
+                                    onInput={handleChange}
+                                    placeholder="e.g., Facebook, Referral, Walk-in"
+                                />
                             </div>
                         </div>
 
