@@ -6,7 +6,7 @@ import { useStore } from '../stores/store';
  * Allows admin to create and manage employee accounts
  */
 export default function Team() {
-    const { user, users, fetchUsers } = useStore();
+    const { user, users, fetchUsers, deleteUser } = useStore();
     const [showAddForm, setShowAddForm] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -133,6 +133,7 @@ export default function Team() {
                                     <th>Email</th>
                                     <th>Role</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -154,6 +155,26 @@ export default function Team() {
                                         </td>
                                         <td>
                                             <span style={{ color: 'var(--accent-success)' }}>● Active</span>
+                                        </td>
+                                        <td>
+                                            {member.role !== 'admin' && (
+                                                <button
+                                                    className="btn btn-sm"
+                                                    style={{ background: '#666', padding: '4px 8px' }}
+                                                    onClick={async () => {
+                                                        if (window.confirm(`Are you sure you want to delete ${member.name}? This cannot be undone.`)) {
+                                                            try {
+                                                                await deleteUser(member.id);
+                                                            } catch (err) {
+                                                                alert('Failed to delete user: ' + err.message);
+                                                            }
+                                                        }
+                                                    }}
+                                                    title="Delete Employee"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

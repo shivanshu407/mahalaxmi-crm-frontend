@@ -383,6 +383,19 @@ export const useStore = create(
                 }
             },
 
+            deleteUser: async (id) => {
+                try {
+                    await api(`/users/${id}`, { method: 'DELETE' });
+                    // Optimistic update
+                    set(state => ({
+                        users: state.users.filter(u => u.id !== id)
+                    }));
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
             // UI actions
             setCurrentView: (view) => set({ currentView: view }),
             setSelectedLead: (lead) => set({ selectedLead: lead }),
