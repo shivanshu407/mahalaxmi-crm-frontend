@@ -330,7 +330,10 @@ export default function Leads({ mode = 'new' }) {
                                                         className="btn btn-sm"
                                                         style={{ background: '#666' }}
                                                         onClick={() => {
-                                                            if (confirm('Delete this lead permanently?')) deleteLead(lead.id);
+                                                            if (window.confirm('Delete this lead permanently?')) {
+                                                                console.log('Deleting lead:', lead.id);
+                                                                deleteLead(lead.id);
+                                                            }
                                                         }}
                                                         title="Delete Permanently"
                                                     >
@@ -342,7 +345,10 @@ export default function Leads({ mode = 'new' }) {
                                                     className="btn btn-sm"
                                                     style={{ background: '#666' }}
                                                     onClick={() => {
-                                                        if (confirm('Delete this lead permanently?')) deleteLead(lead.id);
+                                                        if (window.confirm('Delete this lead permanently?')) {
+                                                            console.log('Deleting lead:', lead.id);
+                                                            deleteLead(lead.id);
+                                                        }
                                                     }}
                                                     title="Delete Permanently"
                                                 >
@@ -360,7 +366,10 @@ export default function Leads({ mode = 'new' }) {
                                                         className="btn btn-sm"
                                                         style={{ background: '#666' }}
                                                         onClick={() => {
-                                                            if (confirm('Delete this lead permanently?')) deleteLead(lead.id);
+                                                            if (window.confirm('Delete this lead permanently?')) {
+                                                                console.log('Deleting lead:', lead.id);
+                                                                deleteLead(lead.id);
+                                                            }
                                                         }}
                                                         title="Delete"
                                                     >

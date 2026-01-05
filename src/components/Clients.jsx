@@ -88,7 +88,10 @@ export default function Clients() {
                                                 className="btn btn-sm"
                                                 style={{ background: '#666' }}
                                                 onClick={() => {
-                                                    if (confirm('Delete this client permanently?')) deleteClient(client.id);
+                                                    if (window.confirm('Delete this client permanently?')) {
+                                                        console.log('Deleting client:', client.id);
+                                                        deleteClient(client.id);
+                                                    }
                                                 }}
                                                 title="Delete Client"
                                             >
