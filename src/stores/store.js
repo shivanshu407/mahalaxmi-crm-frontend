@@ -14,7 +14,7 @@ console.log('API Base URL:', API_BASE_URL);
 
 // API helper with error handling
 const api = async (path, options = {}) => {
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
