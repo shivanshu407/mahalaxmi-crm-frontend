@@ -27,8 +27,15 @@ const api = async (path, options = {}) => {
         const res = await fetch(url, { ...options, headers });
 
         if (!res.ok) {
-            const error = await res.json().catch(() => ({ error: 'Request failed' }));
-            throw new Error(error.error || 'Request failed');
+            const errorText = await res.text();
+            let error;
+            try {
+                error = JSON.parse(errorText);
+            } catch (e) {
+                // If not JSON, use text or status
+                error = { error: errorText || `Request failed (${res.status} ${res.statusText})` };
+            }
+            throw new Error(error.error || `Request failed (${res.status})`);
         }
 
         if (res.status === 204) return null;
