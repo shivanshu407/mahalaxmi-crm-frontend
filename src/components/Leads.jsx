@@ -33,7 +33,6 @@ export default function Leads({ mode = 'new' }) {
         updateLeadStatus, convertLeadToClient, rejectLead, scheduleVisit, deleteLead, user
     } = useStore();
 
-    const [viewMode, setViewMode] = useState(mode === 'warm' ? 'table' : 'pipeline');
     const [filter, setFilter] = useState({ status: '', search: '' });
     const [showVisitModal, setShowVisitModal] = useState(null); // lead ID to schedule
     const [visitData, setVisitData] = useState({ scheduled_at: '', location: '', notes: '' });
@@ -50,23 +49,9 @@ export default function Leads({ mode = 'new' }) {
             fetchLeads({ status: 'rejected' });
         } else {
             // New/Active leads (default)
-            // If we want ONLY 'new' status, passing status='new' would filter strict
-            // But usually 'New Leads' dashboard might mean active pipeline?
-            // User said "rename... as new leads", implying the main pipeline
-            // If we strictly filter status='new', they won't see other active stages.
-            // So we'll fetch all non-rejected, non-client if possible?
-            // Or just fetch all and let frontend filter?
-            // Existing default fetchLeads gets everything (unless filtered by API).
-            // Let's stick to default fetchLeads for now.
             fetchLeads();
         }
     }, [mode]);
-
-    // Group leads by status for pipeline view
-    const leadsByStatus = LEAD_STATUSES.reduce((acc, status) => {
-        acc[status.id] = dataSource.filter(lead => lead.status === status.id);
-        return acc;
-    }, {});
 
     // Filtered leads for table view
     const filteredLeads = dataSource.filter(lead => {
@@ -167,22 +152,6 @@ export default function Leads({ mode = 'new' }) {
                 <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>{getTitle()}</h1>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                     {mode === 'new' && (
-                        <div style={{ display: 'flex', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
-                            <button
-                                className={`btn ${viewMode === 'pipeline' ? 'btn-primary' : 'btn-secondary'}`}
-                                onClick={() => setViewMode('pipeline')}
-                            >
-                                Pipeline
-                            </button>
-                            <button
-                                className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-secondary'}`}
-                                onClick={() => setViewMode('table')}
-                            >
-                                Table
-                            </button>
-                        </div>
-                    )}
-                    {mode === 'new' && (
                         <button className="btn btn-primary" onClick={openModal}>
                             + New Lead
                         </button>
@@ -216,44 +185,8 @@ export default function Leads({ mode = 'new' }) {
 
             {isLoading && dataSource.length === 0 ? (
                 <div className="loading" />
-            ) : viewMode === 'pipeline' && mode === 'new' ? (
-                /* Pipeline View (Only for New/Active Leads) */
-                <div className="pipeline" style={{ width: '100%' }}>
-                    {LEAD_STATUSES.map(status => (
-                        <div key={status.id} className="pipeline-column">
-                            <div className="pipeline-header">
-                                <h3 style={{ color: `var(--status-${status.color})` }}>{status.label}</h3>
-                                <span className="pipeline-count">{leadsByStatus[status.id]?.length || 0}</span>
-                            </div>
-                            <div className="pipeline-cards">
-                                {leadsByStatus[status.id]?.map(lead => (
-                                    <div
-                                        key={lead.id}
-                                        className="lead-card"
-                                        onClick={() => { setSelectedLead(lead); openModal(); }}
-                                    >
-                                        <div className="lead-card-name">{lead.name}</div>
-                                        <div className="lead-card-meta">
-                                            <span>{lead.phone || 'No phone'}</span>
-                                        </div>
-                                        {lead.budget_max && (
-                                            <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--accent-success)' }}>
-                                                ₹{(lead.budget_max / 100000).toFixed(0)}L budget
-                                            </div>
-                                        )}
-                                        {lead.location && (
-                                            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                                                📍 {lead.location}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
             ) : (
-                /* Table View (Default for Warm/Archive) */
+                /* Table View (Default) */
                 <div className="card full-width">
                     <div className="table-container">
                         <table>
