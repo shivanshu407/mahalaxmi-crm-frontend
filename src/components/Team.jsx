@@ -120,62 +120,110 @@ export default function Team() {
                     <h2 className="card-title">Team Members</h2>
                 </div>
                 {users.length > 0 ? (
-                    <div className="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map(member => (
-                                    <tr key={member.id}>
-                                        <td style={{ fontWeight: '600' }}>{member.name}</td>
-                                        <td>{member.email}</td>
-                                        <td>
-                                            <span style={{
-                                                background: member.role === 'admin' ? 'var(--accent-primary)' : 'var(--accent-success)',
-                                                color: 'white',
-                                                padding: '2px 8px',
-                                                borderRadius: 'var(--radius-sm)',
-                                                fontSize: 'var(--text-xs)',
-                                                textTransform: 'uppercase',
-                                            }}>
-                                                {member.role}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span style={{ color: 'var(--accent-success)' }}>● Active</span>
-                                        </td>
-                                        <td>
-                                            {member.role !== 'admin' && (
-                                                <button
-                                                    className="btn btn-sm"
-                                                    style={{ background: '#666', padding: '4px 8px' }}
-                                                    onClick={async () => {
-                                                        if (window.confirm(`Are you sure you want to delete ${member.name}? This cannot be undone.`)) {
-                                                            try {
-                                                                await deleteUser(member.id);
-                                                            } catch (err) {
-                                                                alert('Failed to delete user: ' + err.message);
-                                                            }
-                                                        }
-                                                    }}
-                                                    title="Delete Employee"
-                                                >
-                                                    🗑️
-                                                </button>
-                                            )}
-                                        </td>
+                    <>
+                        <div className="table-container desktop-only">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    {users.map(member => (
+                                        <tr key={member.id}>
+                                            <td style={{ fontWeight: '600' }}>{member.name}</td>
+                                            <td>{member.email}</td>
+                                            <td>
+                                                <span style={{
+                                                    background: member.role === 'admin' ? 'var(--accent-primary)' : 'var(--accent-success)',
+                                                    color: 'white',
+                                                    padding: '2px 8px',
+                                                    borderRadius: 'var(--radius-sm)',
+                                                    fontSize: 'var(--text-xs)',
+                                                    textTransform: 'uppercase',
+                                                }}>
+                                                    {member.role}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span style={{ color: 'var(--accent-success)' }}>● Active</span>
+                                            </td>
+                                            <td>
+                                                {member.role !== 'admin' && (
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        style={{ background: '#666', padding: '4px 8px' }}
+                                                        onClick={async () => {
+                                                            if (window.confirm(`Are you sure you want to delete ${member.name}? This cannot be undone.`)) {
+                                                                try {
+                                                                    await deleteUser(member.id);
+                                                                } catch (err) {
+                                                                    alert('Failed to delete user: ' + err.message);
+                                                                }
+                                                            }
+                                                        }}
+                                                        title="Delete Employee"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="mobile-only">
+                            {users.map(member => (
+                                <div key={member.id} style={{
+                                    background: 'var(--bg-tertiary)',
+                                    padding: 'var(--space-4)',
+                                    borderRadius: 'var(--radius-md)',
+                                    marginBottom: 'var(--space-3)',
+                                    border: '1px solid var(--border-color)',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div>
+                                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>{member.name}</div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>{member.email}</div>
+                                        <span style={{
+                                            background: member.role === 'admin' ? 'var(--accent-primary)' : 'var(--accent-success)',
+                                            color: 'white',
+                                            padding: '2px 8px',
+                                            borderRadius: 'var(--radius-sm)',
+                                            fontSize: '10px',
+                                            textTransform: 'uppercase',
+                                        }}>
+                                            {member.role}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        {member.role !== 'admin' && (
+                                            <button
+                                                className="btn btn-sm"
+                                                style={{ background: '#666', padding: '8px' }}
+                                                onClick={async () => {
+                                                    if (window.confirm(`Are you sure you want to delete ${member.name}?`)) {
+                                                        await deleteUser(member.id);
+                                                    }
+                                                }}
+                                            >
+                                                🗑️
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 ) : (
                     <div className="empty-state">
                         <div className="empty-state-icon">👥</div>

@@ -136,6 +136,7 @@ export default function FollowUps() {
                                                 padding: 'var(--space-4)',
                                                 background: 'var(--bg-tertiary)',
                                                 borderRadius: 'var(--radius-md)',
+                                                flexWrap: 'wrap'
                                             }}
                                         >
                                             <button

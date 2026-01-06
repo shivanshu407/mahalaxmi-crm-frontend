@@ -5,7 +5,7 @@ import { useStore } from '../stores/store';
  * SPEED: Pure component with minimal re-renders
  * SECURITY: Role-based menu items
  */
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
     const { currentView, setCurrentView, user, logout } = useStore();
 
     const isAdmin = user?.role === 'admin';
@@ -27,11 +27,21 @@ export default function Sidebar() {
             { id: 'followups', label: 'My Follow-ups', icon: '📞' },
         ];
 
+    const handleNavClick = (view) => {
+        setCurrentView(view);
+        if (window.innerWidth <= 768 && onClose) {
+            onClose();
+        }
+    };
+
     return (
-        <aside className="sidebar">
-            <div className="sidebar-logo">
-                <img src="/assets/logo.svg" alt="Logo" style={{ height: '32px', width: 'auto' }} />
-                <span style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: '#000000' }}>Mahalaxmi Associates</span>
+        <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+            <div className="sidebar-header-mobile">
+                <div className="sidebar-logo">
+                    <img src="/assets/logo.svg" alt="Logo" style={{ height: '32px', width: 'auto' }} />
+                    <span style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: '#000000' }}>Mahalaxmi Associates</span>
+                </div>
+                <button className="btn-icon mobile-close-btn" onClick={onClose}>✕</button>
             </div>
 
             <nav className="sidebar-nav">
@@ -39,7 +49,7 @@ export default function Sidebar() {
                     <button
                         key={item.id}
                         className={`nav-item ${currentView === item.id ? 'active' : ''}`}
-                        onClick={() => setCurrentView(item.id)}
+                        onClick={() => handleNavClick(item.id)}
                     >
                         <span>{item.icon}</span>
                         {item.label}

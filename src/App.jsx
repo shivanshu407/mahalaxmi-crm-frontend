@@ -1,4 +1,4 @@
-import { useEffect } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
 import { useStore } from './stores/store';
 import Dashboard from './components/Dashboard';
 import Leads from './components/Leads';
@@ -15,6 +15,7 @@ import Sidebar from './components/Sidebar';
  */
 export default function App() {
     const { isAuthenticated, currentView, fetchSources, fetchUsers } = useStore();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Pre-fetch lookup data on auth
     useEffect(() => {
@@ -52,10 +53,28 @@ export default function App() {
 
     return (
         <div className="app-layout">
-            <Sidebar />
+            <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+
+            {/* Mobile Header */}
+            <header className="mobile-header">
+                <button className="btn-icon" onClick={() => setIsMobileMenuOpen(true)}>
+                    ☰
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src="/assets/logo.svg" alt="Logo" style={{ height: '24px' }} />
+                    <span style={{ fontWeight: 700, fontSize: '14px' }}>Mahalaxmi</span>
+                </div>
+                <div style={{ width: '32px' }}></div> {/* Spacer for centering */}
+            </header>
+
             <main className="main-content">
                 {renderView()}
             </main>
+
+            {/* Mobile Overlay */}
+            {isMobileMenuOpen && (
+                <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)} />
+            )}
         </div>
     );
 }

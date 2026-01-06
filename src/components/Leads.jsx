@@ -188,7 +188,7 @@ export default function Leads({ mode = 'new' }) {
             ) : (
                 /* Table View (Default) */
                 <div className="card full-width">
-                    <div className="table-container">
+                    <div className="table-container desktop-only">
                         <table>
                             <thead>
                                 <tr>
@@ -315,13 +315,68 @@ export default function Leads({ mode = 'new' }) {
                                 ))}
                             </tbody>
                         </table>
-                        {filteredLeads.length === 0 && (
-                            <div className="empty-state">
-                                <div className="empty-state-icon">📭</div>
-                                <p>No leads found in this view.</p>
-                            </div>
-                        )}
                     </div>
+
+                    {/* Mobile Card View */}
+                    <div className="mobile-only">
+                        {filteredLeads.map(lead => (
+                            <div key={lead.id} style={{
+                                background: 'var(--bg-tertiary)',
+                                padding: 'var(--space-4)',
+                                borderRadius: 'var(--radius-md)',
+                                marginBottom: 'var(--space-3)',
+                                border: '1px solid var(--border-color)'
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+                                    <div>
+                                        <div style={{ fontWeight: '600' }}>{lead.name}</div>
+                                        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{lead.location}</div>
+                                    </div>
+                                    <div>
+                                        {mode === 'new' ? (
+                                            <select
+                                                className="form-select"
+                                                value={lead.status}
+                                                onChange={(e) => handleStatusChange(lead.id, e.target.value)}
+                                                style={{ padding: '4px', fontSize: '12px' }}
+                                            >
+                                                {LEAD_STATUSES.map(s => (
+                                                    <option key={s.id} value={s.id}>{s.label}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <span className={`status-badge ${lead.status}`}>{lead.status}</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px', marginBottom: '12px' }}>
+                                    <div>📞 {lead.phone || '-'}</div>
+                                    <div>💰 {lead.budget_max ? `${(lead.budget_max / 100000).toFixed(0)}L` : '-'}</div>
+                                    {mode === 'warm' && <div style={{ gridColumn: 'span 2' }}>ℹ️ {lead.interest}</div>}
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
+                                    {mode === 'warm' ? (
+                                        <>
+                                            <button className="btn btn-sm btn-primary" onClick={() => convertLeadToClient(lead.id)}>Convert</button>
+                                            <button className="btn btn-sm" style={{ background: 'var(--accent-warning)', color: 'white' }} onClick={() => setShowVisitModal(lead)}>Visit</button>
+                                        </>
+                                    ) : (
+                                        <button className="btn btn-sm btn-secondary" onClick={() => { setSelectedLead(lead); openModal(); }}>View Details</button>
+                                    )}
+                                    <button className="btn btn-sm btn-danger" onClick={() => deleteLead(lead.id)}>🗑️</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {filteredLeads.length === 0 && (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">📭</div>
+                            <p>No leads found in this view.</p>
+                        </div>
+                    )}
                 </div>
             )}
 

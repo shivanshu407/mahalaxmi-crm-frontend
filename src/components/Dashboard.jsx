@@ -84,7 +84,9 @@ export default function Dashboard() {
                                 alignItems: 'center',
                                 padding: 'var(--space-3)',
                                 background: 'var(--bg-tertiary)',
-                                borderRadius: 'var(--radius-md)'
+                                borderRadius: 'var(--radius-md)',
+                                flexWrap: 'wrap',
+                                gap: '8px'
                             }}>
                                 <div>
                                     <strong>{visit.lead_name}</strong>

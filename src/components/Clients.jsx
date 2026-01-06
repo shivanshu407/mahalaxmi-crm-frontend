@@ -57,51 +57,87 @@ export default function Clients() {
             ) : (
                 <div className="card full-width">
                     {clients.length > 0 ? (
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
-                                    <th style={{ padding: 'var(--space-3)' }}>Name</th>
-                                    <th style={{ padding: 'var(--space-3)' }}>Contact</th>
-                                    <th style={{ padding: 'var(--space-3)' }}>Location</th>
-                                    <th style={{ padding: 'var(--space-3)' }}>Source</th>
-                                    <th style={{ padding: 'var(--space-3)' }}>Converted From</th>
-                                    <th style={{ padding: 'var(--space-3)' }}>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <>
+                            <table className="desktop-only" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+                                        <th style={{ padding: 'var(--space-3)' }}>Name</th>
+                                        <th style={{ padding: 'var(--space-3)' }}>Contact</th>
+                                        <th style={{ padding: 'var(--space-3)' }}>Location</th>
+                                        <th style={{ padding: 'var(--space-3)' }}>Source</th>
+                                        <th style={{ padding: 'var(--space-3)' }}>Converted From</th>
+                                        <th style={{ padding: 'var(--space-3)' }}>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {clients.map(client => (
+                                        <tr key={client.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                            <td style={{ padding: 'var(--space-3)', fontWeight: '500' }}>{client.name}</td>
+                                            <td style={{ padding: 'var(--space-3)' }}>
+                                                <div>{client.phone}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{client.email}</div>
+                                            </td>
+                                            <td style={{ padding: 'var(--space-3)' }}>{client.location || '-'}</td>
+                                            <td style={{ padding: 'var(--space-3)' }}>
+                                                <span className="status-badge" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
+                                                    {client.source}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: 'var(--space-3)' }}>{client.lead_name ? `Lead #${client.lead_id}` : 'Manual'}</td>
+                                            <td style={{ padding: 'var(--space-3)' }}>
+                                                <button
+                                                    className="btn btn-sm"
+                                                    style={{ background: '#666' }}
+                                                    onClick={() => {
+                                                        if (window.confirm('Delete this client permanently?')) {
+                                                            console.log('Deleting client:', client.id);
+                                                            deleteClient(client.id);
+                                                        }
+                                                    }}
+                                                    title="Delete Client"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                            {/* Mobile Card View */}
+                            <div className="mobile-only">
                                 {clients.map(client => (
-                                    <tr key={client.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                        <td style={{ padding: 'var(--space-3)', fontWeight: '500' }}>{client.name}</td>
-                                        <td style={{ padding: 'var(--space-3)' }}>
-                                            <div>{client.phone}</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{client.email}</div>
-                                        </td>
-                                        <td style={{ padding: 'var(--space-3)' }}>{client.location || '-'}</td>
-                                        <td style={{ padding: 'var(--space-3)' }}>
-                                            <span className="status-badge" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
-                                                {client.source}
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: 'var(--space-3)' }}>{client.lead_name ? `Lead #${client.lead_id}` : 'Manual'}</td>
-                                        <td style={{ padding: 'var(--space-3)' }}>
+                                    <div key={client.id} style={{
+                                        background: 'var(--bg-tertiary)',
+                                        padding: 'var(--space-4)',
+                                        borderRadius: 'var(--radius-md)',
+                                        marginBottom: 'var(--space-3)',
+                                        border: '1px solid var(--border-color)',
+                                    }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                            <div style={{ fontWeight: '600' }}>{client.name}</div>
                                             <button
                                                 className="btn btn-sm"
-                                                style={{ background: '#666' }}
+                                                style={{ background: '#666', padding: '4px 8px' }}
                                                 onClick={() => {
                                                     if (window.confirm('Delete this client permanently?')) {
-                                                        console.log('Deleting client:', client.id);
                                                         deleteClient(client.id);
                                                     }
                                                 }}
-                                                title="Delete Client"
                                             >
                                                 🗑️
                                             </button>
-                                        </td>
-                                    </tr>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
+                                            <div>📞 {client.phone}</div>
+                                            <div>📍 {client.location || '-'}</div>
+                                            <div>📧 {client.email || '-'}</div>
+                                            <div>🏷️ {client.source}</div>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </table>
+                            </div>
+                        </>
                     ) : (
                         <div className="empty-state">
                             <div className="empty-state-icon">👥</div>
