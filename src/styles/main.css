@@ -5,15 +5,15 @@
  */
 
 :root {
-  /* Colors - Dark theme optimized for OLED (saves power) */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --bg-elevated: #1e293b;
+  /* Colors - Light theme for professional look */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-elevated: #ffffff;
 
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
 
   --accent-primary: #3b82f6;
   --accent-primary-hover: #2563eb;
@@ -29,6 +29,9 @@
   --status-negotiation: #f97316;
   --status-won: #22c55e;
   --status-lost: #ef4444;
+
+  /* Border color for light mode */
+  --border-color: #e2e8f0;
 
   /* Spacing - 4px base unit */
   --space-1: 0.25rem;
@@ -60,10 +63,10 @@
   --radius-xl: 0.75rem;
   --radius-full: 9999px;
 
-  /* Shadows - subtle for dark theme */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  /* Shadows - more visible for light theme */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
 
   /* Transitions - SPEED: Hardware accelerated */
   --transition-fast: 150ms ease;
@@ -140,13 +143,14 @@ body {
 
 .sidebar {
   background: var(--bg-secondary);
-  border-right: 1px solid var(--bg-tertiary);
+  border-right: 1px solid var(--border-color);
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
+  box-shadow: var(--shadow-sm);
 }
 
 .sidebar-logo {
@@ -162,6 +166,7 @@ body {
 
 .sidebar-logo span {
   background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -203,9 +208,10 @@ body {
 
 .card {
   background: var(--bg-secondary);
-  border: 1px solid var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-header {
@@ -234,12 +240,13 @@ body {
 
 .stat-card {
   background: var(--bg-secondary);
-  border: 1px solid var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-label {
@@ -280,7 +287,7 @@ th,
 td {
   text-align: left;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
 }
 
 th {
@@ -421,8 +428,8 @@ tr:hover td {
 .form-select,
 .form-textarea {
   padding: var(--space-3);
-  background: var(--bg-tertiary);
-  border: 1px solid var(--bg-tertiary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: var(--text-base);
@@ -452,7 +459,7 @@ tr:hover td {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -475,7 +482,7 @@ tr:hover td {
   justify-content: space-between;
   align-items: center;
   padding: var(--space-5);
-  border-bottom: 1px solid var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .modal-title {
@@ -492,7 +499,7 @@ tr:hover td {
   justify-content: flex-end;
   gap: var(--space-3);
   padding: var(--space-5);
-  border-top: 1px solid var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
 }
 
 @keyframes fadeIn {
