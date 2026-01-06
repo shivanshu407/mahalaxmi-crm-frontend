@@ -650,13 +650,31 @@ tr:hover td {
   box-sizing: border-box;
 }
 
+/* Increase Hamburger Icon Size */
+.mobile-header .btn-icon {
+  font-size: 24px;
+  padding: 12px;
+  /* Large touch target */
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 .sidebar-overlay {
-  display: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 90;
-  animation: fadeIn var(--transition-fast);
+  z-index: 99;
+  /* Below sidebar, above everything else */
+  backdrop-filter: blur(2px);
 }
 
 .sidebar-header-mobile {
