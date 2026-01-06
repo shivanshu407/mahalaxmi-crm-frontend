@@ -27,7 +27,7 @@ export default function Login() {
             <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
                 <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--space-4)' }}>
-                        <img src="/assets/logo.png" alt="Mahalaxmi Logo" style={{ height: '60px', width: 'auto' }} />
+                        <img src="/assets/logo.svg" alt="Mahalaxmi Logo" style={{ height: '60px', width: 'auto' }} />
                     </div>
                     <h1 style={{ fontSize: 'var(--text-2xl)', marginBottom: 'var(--space-2)', fontFamily: 'Helvetica, Arial, sans-serif' }}>
                         Mahalaxmi Associates

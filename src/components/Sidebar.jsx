@@ -30,7 +30,7 @@ export default function Sidebar() {
     return (
         <aside className="sidebar">
             <div className="sidebar-logo">
-                <img src="/assets/logo.png" alt="Logo" style={{ height: '32px', width: 'auto' }} />
+                <img src="/assets/logo.svg" alt="Logo" style={{ height: '32px', width: 'auto' }} />
                 <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Mahalaxmi Associates</span>
             </div>
 
