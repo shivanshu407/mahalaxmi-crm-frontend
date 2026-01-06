@@ -306,6 +306,15 @@ export const useStore = create(
 
                 try {
                     await api(`/leads/${id}`, { method: 'DELETE' });
+                    // Refresh stats to remove ghost counts
+                    get().fetchDashboard();
+                    get().fetchWarmLeads();
+                    // Also refresh visits if the deleted lead had one
+                    if (get().user?.role === 'admin') {
+                        const today = new Date().toISOString().split('T')[0];
+                        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+                        get().fetchVisits(today, tomorrow);
+                    }
                 } catch (error) {
                     set({ leads: originalLeads, error: error.message });
                     throw error;
