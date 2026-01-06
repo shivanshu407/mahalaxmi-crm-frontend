@@ -35,7 +35,7 @@ export default function Sidebar({ isOpen, onClose }) {
     };
 
     return (
-        <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+        <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
             <div className="sidebar-header-mobile">
                 <div className="sidebar-logo">
                     <img src="/assets/logo.svg" alt="Logo" style={{ height: '32px', width: 'auto' }} />
