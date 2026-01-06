@@ -51,10 +51,6 @@ export const LEAD_STATUSES = [
     { id: 'new', label: 'New', color: 'new' },
     { id: 'contacted', label: 'Contacted', color: 'contacted' },
     { id: 'qualified', label: 'Qualified', color: 'qualified' },
-    { id: 'proposal', label: 'Proposal', color: 'proposal' },
-    { id: 'negotiation', label: 'Negotiation', color: 'negotiation' },
-    { id: 'won', label: 'Won', color: 'won' },
-    { id: 'lost', label: 'Lost', color: 'lost' },
 ];
 
 // Main store with persistence
