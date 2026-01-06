@@ -786,4 +786,13 @@ tr:hover td {
   h2 {
     font-size: var(--text-lg) !important;
   }
+
+  /* ===== CRITICAL: Mobile/Desktop Visibility Toggle ===== */
+  .mobile-only {
+    display: block !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
 }
