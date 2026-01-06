@@ -165,10 +165,7 @@ body {
 }
 
 .sidebar-logo span {
-  background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #000000;
 }
 
 .sidebar-nav {

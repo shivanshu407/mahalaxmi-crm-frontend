@@ -31,7 +31,7 @@ export default function Sidebar() {
         <aside className="sidebar">
             <div className="sidebar-logo">
                 <img src="/assets/logo.svg" alt="Logo" style={{ height: '32px', width: 'auto' }} />
-                <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Mahalaxmi Associates</span>
+                <span style={{ fontFamily: 'Helvetica, Arial, sans-serif', color: '#000000' }}>Mahalaxmi Associates</span>
             </div>
 
             <nav className="sidebar-nav">
