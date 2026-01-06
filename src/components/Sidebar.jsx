@@ -30,7 +30,8 @@ export default function Sidebar() {
     return (
         <aside className="sidebar">
             <div className="sidebar-logo">
-                🏢 <span>Mahalaxmi CRM</span>
+                <img src="/src/assets/logo.png" alt="Logo" style={{ height: '32px', width: 'auto' }} />
+                <span style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>Mahalaxmi Associates</span>
             </div>
 
             <nav className="sidebar-nav">
