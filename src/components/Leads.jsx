@@ -330,11 +330,11 @@ export default function Leads({ mode = 'new' }) {
 
             {/* Visit Scheduling Modal */}
             {showVisitModal && (
-                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowVisitModal(null)}>
+                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowVisitModal(null); setVisitData({ scheduled_at: '', location: '', notes: '' }); } }}>
                     <div className="modal">
                         <div className="modal-header">
                             <h2 className="modal-title">📅 Schedule Site Visit</h2>
-                            <button className="btn-icon" onClick={() => setShowVisitModal(null)}>✕</button>
+                            <button className="btn-icon" onClick={() => { setShowVisitModal(null); setVisitData({ scheduled_at: '', location: '', notes: '' }); }}>✕</button>
                         </div>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
@@ -380,7 +380,7 @@ export default function Leads({ mode = 'new' }) {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowVisitModal(null)}>Cancel</button>
+                                <button type="button" className="btn btn-secondary" onClick={() => { setShowVisitModal(null); setVisitData({ scheduled_at: '', location: '', notes: '' }); }}>Cancel</button>
                                 <button type="submit" className="btn btn-primary">📅 Schedule Visit</button>
                             </div>
                         </form>

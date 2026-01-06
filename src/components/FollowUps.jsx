@@ -36,9 +36,10 @@ export default function FollowUps() {
         fetchLeads(); // Always fetch leads to select from
     }, []);
 
-    // Filter leads for search
+    // Filter leads for search - exclude clients and rejected leads
+    const availableLeads = leads.filter(l => l.status !== 'client' && l.status !== 'rejected');
     const filteredLeads = searchTerm
-        ? leads.filter(l => l.name.toLowerCase().includes(searchTerm.toLowerCase()) || l.phone?.includes(searchTerm))
+        ? availableLeads.filter(l => l.name.toLowerCase().includes(searchTerm.toLowerCase()) || l.phone?.includes(searchTerm))
         : [];
 
     const handleSelectLead = (lead) => {
@@ -191,11 +192,11 @@ export default function FollowUps() {
 
             {/* Add Follow-up Modal */}
             {showAddForm && (
-                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowAddForm(false)}>
+                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowAddForm(false); resetAddForm(); } }}>
                     <div className="modal">
                         <div className="modal-header">
                             <h2 className="modal-title">Schedule Follow-up</h2>
-                            <button className="btn-icon" onClick={() => setShowAddForm(false)}>✕</button>
+                            <button className="btn-icon" onClick={() => { setShowAddForm(false); resetAddForm(); }}>✕</button>
                         </div>
                         <form onSubmit={handleAdd}>
                             <div className="modal-body">
@@ -237,8 +238,21 @@ export default function FollowUps() {
                                 {selectedLead && (
                                     <div style={{
                                         background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)',
-                                        marginBottom: '16px', fontSize: '14px'
+                                        marginBottom: '16px', fontSize: '14px', position: 'relative'
                                     }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setSelectedLead(null); setSearchTerm(''); setNewFollowUp(prev => ({ ...prev, lead_id: '' })); }}
+                                            style={{
+                                                position: 'absolute', top: '8px', right: '8px',
+                                                background: 'var(--accent-danger)', color: 'white',
+                                                border: 'none', borderRadius: '50%', width: '20px', height: '20px',
+                                                cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                            }}
+                                            title="Change lead"
+                                        >
+                                            ✕
+                                        </button>
                                         <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{selectedLead.name}</div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                                             <div>📞 {selectedLead.phone}</div>
@@ -288,7 +302,7 @@ export default function FollowUps() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)}>Cancel</button>
+                                <button type="button" className="btn btn-secondary" onClick={() => { setShowAddForm(false); resetAddForm(); }}>Cancel</button>
                                 <button type="submit" className="btn btn-primary" disabled={!selectedLead}>Schedule</button>
                             </div>
                         </form>

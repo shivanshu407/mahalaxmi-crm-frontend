@@ -49,13 +49,23 @@ export default function Team() {
         try {
             await registerUser(formData);
             setMessage({ type: 'success', text: 'Employee account created successfully!' });
-            setFormData({ name: '', email: '', password: '', role: 'agent' });
+            resetForm();
             setShowAddForm(false);
         } catch (error) {
             setMessage({ type: 'error', text: error.message || 'Failed to create account' });
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const resetForm = () => {
+        setFormData({ name: '', email: '', password: '', role: 'agent' });
+        setMessage({ type: '', text: '' });
+    };
+
+    const handleCloseModal = () => {
+        setShowAddForm(false);
+        resetForm();
     };
 
     const employees = users.filter(u => u.role !== 'admin');
@@ -176,11 +186,11 @@ export default function Team() {
 
             {/* Add Employee Modal */}
             {showAddForm && (
-                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowAddForm(false)}>
+                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCloseModal(); }}>
                     <div className="modal">
                         <div className="modal-header">
                             <h2 className="modal-title">Add Employee</h2>
-                            <button className="btn-icon" onClick={() => setShowAddForm(false)}>✕</button>
+                            <button className="btn-icon" onClick={handleCloseModal}>✕</button>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="modal-body">
@@ -235,7 +245,7 @@ export default function Team() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)}>
+                                <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
                                     Cancel
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
