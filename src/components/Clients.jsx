@@ -114,11 +114,14 @@ export default function Clients() {
                                         marginBottom: 'var(--space-3)',
                                         border: '1px solid var(--border-color)',
                                     }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                            <div style={{ fontWeight: '600' }}>{client.name}</div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                                            <div>
+                                                <div style={{ fontWeight: '600', fontSize: '16px' }}>{client.name}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{client.phone}</div>
+                                            </div>
                                             <button
                                                 className="btn btn-sm"
-                                                style={{ background: '#666', padding: '4px 8px' }}
+                                                style={{ background: '#666', padding: '8px', minWidth: '36px' }}
                                                 onClick={() => {
                                                     if (window.confirm('Delete this client permanently?')) {
                                                         deleteClient(client.id);
@@ -128,11 +131,24 @@ export default function Clients() {
                                                 🗑️
                                             </button>
                                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                                            <div>📞 {client.phone}</div>
-                                            <div>📍 {client.location || '-'}</div>
-                                            <div>📧 {client.email || '-'}</div>
-                                            <div>🏷️ {client.source}</div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span>📧</span>
+                                                <span style={{ wordBreak: 'break-all' }}>{client.email || '-'}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span>📍</span>
+                                                <span>{client.location || '-'}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span>🏷️</span>
+                                                <span className="status-badge" style={{ background: 'var(--bg-secondary)', fontSize: '12px' }}>{client.source}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                                    From: {client.lead_name ? `Lead #${client.lead_id}` : 'Manual Entry'}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
