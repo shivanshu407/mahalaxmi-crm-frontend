@@ -46,6 +46,7 @@ export default function Leads({ mode = 'new' }) {
         property_details: '',
         documents_link: ''
     });
+    const [viewLeadModal, setViewLeadModal] = useState(null); // lead to view details (read-only)
 
     const isAdmin = user?.role === 'admin';
 
@@ -284,19 +285,27 @@ export default function Leads({ mode = 'new' }) {
                                                     </button>
                                                 </div>
                                             ) : mode === 'archived' ? (
-                                                <button
-                                                    className="btn btn-sm"
-                                                    style={{ background: '#666' }}
-                                                    onClick={() => {
-                                                        if (window.confirm('Delete this lead permanently?')) {
-                                                            console.log('Deleting lead:', lead.id);
-                                                            deleteLead(lead.id);
-                                                        }
-                                                    }}
-                                                    title="Delete Permanently"
-                                                >
-                                                    🗑️ Delete
-                                                </button>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button
+                                                        className="btn btn-sm btn-secondary"
+                                                        onClick={() => setViewLeadModal(lead)}
+                                                        title="View Details"
+                                                    >
+                                                        👁️ View
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        style={{ background: '#666' }}
+                                                        onClick={() => {
+                                                            if (window.confirm('Delete this lead permanently?')) {
+                                                                deleteLead(lead.id);
+                                                            }
+                                                        }}
+                                                        title="Delete Permanently"
+                                                    >
+                                                        🗑️
+                                                    </button>
+                                                </div>
                                             ) : (
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button
@@ -567,6 +576,82 @@ export default function Leads({ mode = 'new' }) {
                                 <button type="submit" className="btn btn-primary">🏆 Convert to Client</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* View Lead Details Modal (Read-only for archived leads) */}
+            {viewLeadModal && (
+                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setViewLeadModal(null); }}>
+                    <div className="modal" style={{ maxWidth: '550px' }}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">👤 Lead Details</h2>
+                            <button className="btn-icon" onClick={() => setViewLeadModal(null)}>✕</button>
+                        </div>
+                        <div className="modal-body">
+                            <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Name</div>
+                                        <div style={{ fontWeight: '600' }}>{viewLeadModal.name}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Phone</div>
+                                        <div>{viewLeadModal.phone || '-'}</div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Email</div>
+                                        <div>{viewLeadModal.email || '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Location</div>
+                                        <div>{viewLeadModal.location || '-'}</div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Budget</div>
+                                        <div>{viewLeadModal.budget_max ? `₹${Number(viewLeadModal.budget_max).toLocaleString()}` : '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Status</div>
+                                        <span className={`status-badge ${viewLeadModal.status}`}>{viewLeadModal.status}</span>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Source</div>
+                                        <div>{viewLeadModal.source || '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Interest</div>
+                                        <div>{viewLeadModal.interest || '-'}</div>
+                                    </div>
+                                </div>
+                                {viewLeadModal.notes && (
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Notes</div>
+                                        <div style={{ whiteSpace: 'pre-wrap', background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)' }}>{viewLeadModal.notes}</div>
+                                    </div>
+                                )}
+                                <hr style={{ borderColor: 'var(--border-color)' }} />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Created</div>
+                                        <div>{viewLeadModal.created_at ? new Date(viewLeadModal.created_at).toLocaleDateString() : '-'}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Last Updated</div>
+                                        <div>{viewLeadModal.updated_at ? new Date(viewLeadModal.updated_at).toLocaleDateString() : '-'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={() => setViewLeadModal(null)}>Close</button>
+                        </div>
                     </div>
                 </div>
             )}
