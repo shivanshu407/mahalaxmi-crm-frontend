@@ -48,7 +48,7 @@ export default function Leads({ mode = 'new' }) {
         if (mode === 'warm') {
             fetchWarmLeads();
         } else if (mode === 'archived') {
-            fetchLeads({ status: 'rejected' });
+            fetchLeads({ archived: '1' });
         } else {
             // New/Active leads (default)
             fetchLeads();
