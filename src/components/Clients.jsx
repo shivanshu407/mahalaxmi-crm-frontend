@@ -11,6 +11,7 @@ export default function Clients() {
     const [showAddForm, setShowAddForm] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
     const [editData, setEditData] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
     const [newClient, setNewClient] = useState({
         name: '',
         phone: '',
@@ -44,10 +45,18 @@ export default function Clients() {
         await updateClient(selectedClient.id, editData);
         setSelectedClient(null);
         setEditData(null);
+        setIsEditing(false);
+    };
+
+    const openViewModal = (client) => {
+        setSelectedClient(client);
+        setIsEditing(false);
+        setEditData(null);
     };
 
     const openEditModal = (client) => {
         setSelectedClient(client);
+        setIsEditing(true);
         setEditData({
             name: client.name || '',
             phone: client.phone || '',
@@ -59,6 +68,12 @@ export default function Clients() {
             property_details: client.property_details || '',
             documents_link: client.documents_link || ''
         });
+    };
+
+    const closeModal = () => {
+        setSelectedClient(null);
+        setEditData(null);
+        setIsEditing(false);
     };
 
     return (
@@ -110,7 +125,7 @@ export default function Clients() {
                                             <tr
                                                 key={client.id}
                                                 style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
-                                                onClick={() => openEditModal(client)}
+                                                onClick={() => openViewModal(client)}
                                             >
                                                 <td style={{ padding: 'var(--space-3)', fontWeight: '500' }}>{client.name}</td>
                                                 <td style={{ padding: 'var(--space-3)' }}>
@@ -312,128 +327,138 @@ export default function Clients() {
                 </div>
             )}
 
-            {/* Edit Client Modal */}
-            {selectedClient && editData && (
-                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setSelectedClient(null); setEditData(null); } }}>
+            {/* View/Edit Client Modal */}
+            {selectedClient && (
+                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
                     <div className="modal" style={{ maxWidth: '600px' }}>
                         <div className="modal-header">
-                            <h2 className="modal-title">✏️ Edit Client Details</h2>
-                            <button className="btn-icon" onClick={() => { setSelectedClient(null); setEditData(null); }}>✕</button>
+                            <h2 className="modal-title">{isEditing ? '✏️ Edit Client' : '👤 Client Details'}</h2>
+                            <button className="btn-icon" onClick={closeModal}>✕</button>
                         </div>
-                        <form onSubmit={handleEdit}>
-                            <div className="modal-body">
-                                <div className="form-group">
-                                    <label className="form-label">Name *</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={editData.name}
-                                        onInput={(e) => setEditData(d => ({ ...d, name: e.target.value }))}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label className="form-label">Phone</label>
-                                        <input
-                                            type="tel"
-                                            className="form-input"
-                                            value={editData.phone}
-                                            onInput={(e) => setEditData(d => ({ ...d, phone: e.target.value }))}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Email</label>
-                                        <input
-                                            type="email"
-                                            className="form-input"
-                                            value={editData.email}
-                                            onInput={(e) => setEditData(d => ({ ...d, email: e.target.value }))}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label className="form-label">Location</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            value={editData.location}
-                                            onInput={(e) => setEditData(d => ({ ...d, location: e.target.value }))}
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Source</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            value={editData.source}
-                                            onInput={(e) => setEditData(d => ({ ...d, source: e.target.value }))}
-                                        />
-                                    </div>
-                                </div>
 
-                                <hr style={{ margin: 'var(--space-4) 0', borderColor: 'var(--border-color)' }} />
-                                <h3 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Deal Information</h3>
-
-                                <div className="form-row">
+                        {isEditing && editData ? (
+                            /* EDIT MODE */
+                            <form onSubmit={handleEdit}>
+                                <div className="modal-body">
                                     <div className="form-group">
-                                        <label className="form-label">Deal Date</label>
-                                        <input
-                                            type="date"
-                                            className="form-input"
-                                            value={editData.deal_date}
-                                            onInput={(e) => setEditData(d => ({ ...d, deal_date: e.target.value }))}
-                                        />
+                                        <label className="form-label">Name *</label>
+                                        <input type="text" className="form-input" value={editData.name} onInput={(e) => setEditData(d => ({ ...d, name: e.target.value }))} required />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Phone</label>
+                                            <input type="tel" className="form-input" value={editData.phone} onInput={(e) => setEditData(d => ({ ...d, phone: e.target.value }))} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Email</label>
+                                            <input type="email" className="form-input" value={editData.email} onInput={(e) => setEditData(d => ({ ...d, email: e.target.value }))} />
+                                        </div>
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Location</label>
+                                            <input type="text" className="form-input" value={editData.location} onInput={(e) => setEditData(d => ({ ...d, location: e.target.value }))} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Source</label>
+                                            <input type="text" className="form-input" value={editData.source} onInput={(e) => setEditData(d => ({ ...d, source: e.target.value }))} />
+                                        </div>
+                                    </div>
+                                    <hr style={{ margin: 'var(--space-4) 0', borderColor: 'var(--border-color)' }} />
+                                    <h3 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Deal Information</h3>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Deal Date</label>
+                                            <input type="date" className="form-input" value={editData.deal_date} onInput={(e) => setEditData(d => ({ ...d, deal_date: e.target.value }))} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Price (₹)</label>
+                                            <input type="number" className="form-input" value={editData.price} onInput={(e) => setEditData(d => ({ ...d, price: e.target.value }))} placeholder="e.g. 5000000" />
+                                        </div>
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label">Price (₹)</label>
-                                        <input
-                                            type="number"
-                                            className="form-input"
-                                            value={editData.price}
-                                            onInput={(e) => setEditData(d => ({ ...d, price: e.target.value }))}
-                                            placeholder="e.g. 5000000"
-                                        />
+                                        <label className="form-label">Property Details</label>
+                                        <textarea className="form-input" rows="3" value={editData.property_details} onInput={(e) => setEditData(d => ({ ...d, property_details: e.target.value }))} placeholder="Description of the property..." />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Documents Link</label>
+                                        <input type="url" className="form-input" value={editData.documents_link} onInput={(e) => setEditData(d => ({ ...d, documents_link: e.target.value }))} placeholder="https://drive.google.com/..." />
                                     </div>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Property Details</label>
-                                    <textarea
-                                        className="form-input"
-                                        rows="3"
-                                        value={editData.property_details}
-                                        onInput={(e) => setEditData(d => ({ ...d, property_details: e.target.value }))}
-                                        placeholder="Description of the property..."
-                                    />
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancel</button>
+                                    <button type="submit" className="btn btn-primary">💾 Save Changes</button>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Documents Link (Google Drive)</label>
-                                    <input
-                                        type="url"
-                                        className="form-input"
-                                        value={editData.documents_link}
-                                        onInput={(e) => setEditData(d => ({ ...d, documents_link: e.target.value }))}
-                                        placeholder="https://drive.google.com/..."
-                                    />
-                                    {editData.documents_link && (
-                                        <a href={editData.documents_link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', fontSize: '14px', marginTop: '4px', display: 'inline-block' }}>
-                                            Open Documents ↗
-                                        </a>
-                                    )}
-                                </div>
+                            </form>
+                        ) : (
+                            /* VIEW MODE */
+                            <>
+                                <div className="modal-body">
+                                    <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                            <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Name</div>
+                                                <div style={{ fontWeight: '500' }}>{selectedClient.name}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Phone</div>
+                                                <div>{selectedClient.phone || '-'}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                            <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Email</div>
+                                                <div>{selectedClient.email || '-'}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Location</div>
+                                                <div>{selectedClient.location || '-'}</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Source</div>
+                                            <div>{selectedClient.source || '-'}</div>
+                                        </div>
 
-                                {selectedClient.lead_id && (
-                                    <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)', marginTop: '16px' }}>
-                                        <small style={{ color: 'var(--text-muted)' }}>Converted from Lead #{selectedClient.lead_id}</small>
+                                        <hr style={{ borderColor: 'var(--border-color)' }} />
+                                        <h3 style={{ fontSize: 'var(--text-lg)', margin: 0 }}>Deal Information</h3>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                            <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Deal Date</div>
+                                                <div>{selectedClient.deal_date ? new Date(selectedClient.deal_date).toLocaleDateString() : '-'}</div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Price</div>
+                                                <div style={{ fontWeight: '600', color: 'var(--accent-success)' }}>{selectedClient.price ? `₹${Number(selectedClient.price).toLocaleString()}` : '-'}</div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Property Details</div>
+                                            <div style={{ whiteSpace: 'pre-wrap' }}>{selectedClient.property_details || '-'}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Documents</div>
+                                            {selectedClient.documents_link ? (
+                                                <a href={selectedClient.documents_link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)' }}>
+                                                    Open Documents ↗
+                                                </a>
+                                            ) : '-'}
+                                        </div>
+
+                                        {selectedClient.lead_id && (
+                                            <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
+                                                <small style={{ color: 'var(--text-muted)' }}>Converted from Lead #{selectedClient.lead_id}</small>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => { setSelectedClient(null); setEditData(null); }}>Cancel</button>
-                                <button type="submit" className="btn btn-primary">💾 Save Changes</button>
-                            </div>
-                        </form>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={closeModal}>Close</button>
+                                    <button type="button" className="btn btn-primary" onClick={() => openEditModal(selectedClient)}>✏️ Edit</button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
