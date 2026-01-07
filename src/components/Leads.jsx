@@ -37,7 +37,15 @@ export default function Leads({ mode = 'new' }) {
     const [showVisitModal, setShowVisitModal] = useState(null); // lead ID to schedule
     const [visitData, setVisitData] = useState({ scheduled_at: '', location: '', notes: '' });
     const [showConvertModal, setShowConvertModal] = useState(null); // lead to convert
-    const [dealData, setDealData] = useState({ deal_date: '', price: '', property_details: '', documents_link: '' });
+    const [dealData, setDealData] = useState({
+        email: '',
+        location: '',
+        alternate_phone: '',
+        deal_date: '',
+        price: '',
+        property_details: '',
+        documents_link: ''
+    });
 
     const isAdmin = user?.role === 'admin';
 
@@ -447,25 +455,70 @@ export default function Leads({ mode = 'new' }) {
 
             {/* Convert to Client Modal */}
             {showConvertModal && (
-                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowConvertModal(null); setDealData({ deal_date: '', price: '', property_details: '', documents_link: '' }); } }}>
-                    <div className="modal">
+                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowConvertModal(null); setDealData({ email: '', location: '', alternate_phone: '', deal_date: '', price: '', property_details: '', documents_link: '' }); } }}>
+                    <div className="modal" style={{ maxWidth: '600px' }}>
                         <div className="modal-header">
                             <h2 className="modal-title">🏆 Convert to Client</h2>
-                            <button className="btn-icon" onClick={() => { setShowConvertModal(null); setDealData({ deal_date: '', price: '', property_details: '', documents_link: '' }); }}>✕</button>
+                            <button className="btn-icon" onClick={() => { setShowConvertModal(null); setDealData({ email: '', location: '', alternate_phone: '', deal_date: '', price: '', property_details: '', documents_link: '' }); }}>✕</button>
                         </div>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
                             await convertLeadToClient(showConvertModal.id, dealData);
                             setShowConvertModal(null);
-                            setDealData({ deal_date: '', price: '', property_details: '', documents_link: '' });
+                            setDealData({ email: '', location: '', alternate_phone: '', deal_date: '', price: '', property_details: '', documents_link: '' });
                         }}>
                             <div className="modal-body">
+                                {/* Read-only lead info */}
                                 <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
-                                    <strong>{showConvertModal.name}</strong>
-                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-                                        {showConvertModal.phone} • {showConvertModal.location}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                        <div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Name</div>
+                                            <div style={{ fontWeight: '600' }}>{showConvertModal.name}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Primary Phone</div>
+                                            <div style={{ fontWeight: '600' }}>{showConvertModal.phone}</div>
+                                        </div>
                                     </div>
                                 </div>
+
+                                <h4 style={{ margin: '0 0 var(--space-3)', color: 'var(--text-secondary)' }}>Client Details</h4>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-input"
+                                            value={dealData.email}
+                                            onInput={(e) => setDealData(d => ({ ...d, email: e.target.value }))}
+                                            placeholder="client@email.com"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Alternate Phone</label>
+                                        <input
+                                            type="tel"
+                                            className="form-input"
+                                            value={dealData.alternate_phone}
+                                            onInput={(e) => setDealData(d => ({ ...d, alternate_phone: e.target.value }))}
+                                            placeholder="Optional alternate number"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Location / Address</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={dealData.location}
+                                        onInput={(e) => setDealData(d => ({ ...d, location: e.target.value }))}
+                                        placeholder="Client's address"
+                                    />
+                                </div>
+
+                                <hr style={{ margin: 'var(--space-4) 0', borderColor: 'var(--border-color)' }} />
+                                <h4 style={{ margin: '0 0 var(--space-3)', color: 'var(--text-secondary)' }}>Deal Information</h4>
+
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label className="form-label">Deal Date *</label>
@@ -510,7 +563,7 @@ export default function Leads({ mode = 'new' }) {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => { setShowConvertModal(null); setDealData({ deal_date: '', price: '', property_details: '', documents_link: '' }); }}>Cancel</button>
+                                <button type="button" className="btn btn-secondary" onClick={() => { setShowConvertModal(null); setDealData({ email: '', location: '', alternate_phone: '', deal_date: '', price: '', property_details: '', documents_link: '' }); }}>Cancel</button>
                                 <button type="submit" className="btn btn-primary">🏆 Convert to Client</button>
                             </div>
                         </form>
