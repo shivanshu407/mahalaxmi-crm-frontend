@@ -161,6 +161,19 @@ export const useStore = create(
                 }
             },
 
+            updateClient: async (id, data) => {
+                try {
+                    await api(`/clients/${id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(data)
+                    });
+                    get().fetchClients();
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
             deleteLead: async (id) => {
                 try {
                     await api(`/leads/${id}`, { method: 'DELETE' });

@@ -6,9 +6,11 @@ import { useStore } from '../stores/store';
  * FEATURES: List clients, Search, Manual Add Client
  */
 export default function Clients() {
-    const { clients, fetchClients, createClient, deleteClient, isLoading } = useStore();
+    const { clients, fetchClients, createClient, deleteClient, updateClient, isLoading } = useStore();
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
+    const [selectedClient, setSelectedClient] = useState(null);
+    const [editData, setEditData] = useState(null);
     const [newClient, setNewClient] = useState({
         name: '',
         phone: '',
@@ -35,6 +37,28 @@ export default function Clients() {
         await createClient(newClient);
         setShowAddForm(false);
         setNewClient({ name: '', phone: '', email: '', location: '', source: 'manual', deal_date: '', price: '', property_details: '', documents_link: '' });
+    };
+
+    const handleEdit = async (e) => {
+        e.preventDefault();
+        await updateClient(selectedClient.id, editData);
+        setSelectedClient(null);
+        setEditData(null);
+    };
+
+    const openEditModal = (client) => {
+        setSelectedClient(client);
+        setEditData({
+            name: client.name || '',
+            phone: client.phone || '',
+            email: client.email || '',
+            location: client.location || '',
+            source: client.source || '',
+            deal_date: client.deal_date ? client.deal_date.split('T')[0] : '',
+            price: client.price || '',
+            property_details: client.property_details || '',
+            documents_link: client.documents_link || ''
+        });
     };
 
     return (
@@ -83,7 +107,11 @@ export default function Clients() {
                                     </thead>
                                     <tbody>
                                         {clients.map(client => (
-                                            <tr key={client.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                            <tr
+                                                key={client.id}
+                                                style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
+                                                onClick={() => openEditModal(client)}
+                                            >
                                                 <td style={{ padding: 'var(--space-3)', fontWeight: '500' }}>{client.name}</td>
                                                 <td style={{ padding: 'var(--space-3)' }}>
                                                     <div>{client.phone}</div>
@@ -96,20 +124,28 @@ export default function Clients() {
                                                     </span>
                                                 </td>
                                                 <td style={{ padding: 'var(--space-3)' }}>{client.lead_name ? `Lead #${client.lead_id}` : 'Manual'}</td>
-                                                <td style={{ padding: 'var(--space-3)' }}>
-                                                    <button
-                                                        className="btn btn-sm"
-                                                        style={{ background: '#666' }}
-                                                        onClick={() => {
-                                                            if (window.confirm('Delete this client permanently?')) {
-                                                                console.log('Deleting client:', client.id);
-                                                                deleteClient(client.id);
-                                                            }
-                                                        }}
-                                                        title="Delete Client"
-                                                    >
-                                                        🗑️
-                                                    </button>
+                                                <td style={{ padding: 'var(--space-3)' }} onClick={(e) => e.stopPropagation()}>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button
+                                                            className="btn btn-sm btn-secondary"
+                                                            onClick={() => openEditModal(client)}
+                                                            title="View/Edit Client"
+                                                        >
+                                                            ✏️
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-sm"
+                                                            style={{ background: '#666' }}
+                                                            onClick={() => {
+                                                                if (window.confirm('Delete this client permanently?')) {
+                                                                    deleteClient(client.id);
+                                                                }
+                                                            }}
+                                                            title="Delete Client"
+                                                        >
+                                                            🗑️
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
@@ -270,6 +306,132 @@ export default function Clients() {
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)}>Cancel</button>
                                 <button type="submit" className="btn btn-primary">Add Client</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Client Modal */}
+            {selectedClient && editData && (
+                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setSelectedClient(null); setEditData(null); } }}>
+                    <div className="modal" style={{ maxWidth: '600px' }}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">✏️ Edit Client Details</h2>
+                            <button className="btn-icon" onClick={() => { setSelectedClient(null); setEditData(null); }}>✕</button>
+                        </div>
+                        <form onSubmit={handleEdit}>
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label className="form-label">Name *</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={editData.name}
+                                        onInput={(e) => setEditData(d => ({ ...d, name: e.target.value }))}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Phone</label>
+                                        <input
+                                            type="tel"
+                                            className="form-input"
+                                            value={editData.phone}
+                                            onInput={(e) => setEditData(d => ({ ...d, phone: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-input"
+                                            value={editData.email}
+                                            onInput={(e) => setEditData(d => ({ ...d, email: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Location</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={editData.location}
+                                            onInput={(e) => setEditData(d => ({ ...d, location: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Source</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={editData.source}
+                                            onInput={(e) => setEditData(d => ({ ...d, source: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <hr style={{ margin: 'var(--space-4) 0', borderColor: 'var(--border-color)' }} />
+                                <h3 style={{ fontSize: 'var(--text-lg)', marginBottom: 'var(--space-4)' }}>Deal Information</h3>
+
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Deal Date</label>
+                                        <input
+                                            type="date"
+                                            className="form-input"
+                                            value={editData.deal_date}
+                                            onInput={(e) => setEditData(d => ({ ...d, deal_date: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Price (₹)</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            value={editData.price}
+                                            onInput={(e) => setEditData(d => ({ ...d, price: e.target.value }))}
+                                            placeholder="e.g. 5000000"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Property Details</label>
+                                    <textarea
+                                        className="form-input"
+                                        rows="3"
+                                        value={editData.property_details}
+                                        onInput={(e) => setEditData(d => ({ ...d, property_details: e.target.value }))}
+                                        placeholder="Description of the property..."
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Documents Link (Google Drive)</label>
+                                    <input
+                                        type="url"
+                                        className="form-input"
+                                        value={editData.documents_link}
+                                        onInput={(e) => setEditData(d => ({ ...d, documents_link: e.target.value }))}
+                                        placeholder="https://drive.google.com/..."
+                                    />
+                                    {editData.documents_link && (
+                                        <a href={editData.documents_link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', fontSize: '14px', marginTop: '4px', display: 'inline-block' }}>
+                                            Open Documents ↗
+                                        </a>
+                                    )}
+                                </div>
+
+                                {selectedClient.lead_id && (
+                                    <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)', marginTop: '16px' }}>
+                                        <small style={{ color: 'var(--text-muted)' }}>Converted from Lead #{selectedClient.lead_id}</small>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => { setSelectedClient(null); setEditData(null); }}>Cancel</button>
+                                <button type="submit" className="btn btn-primary">💾 Save Changes</button>
                             </div>
                         </form>
                     </div>
