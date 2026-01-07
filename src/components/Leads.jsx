@@ -30,7 +30,7 @@ export default function Leads({ mode = 'new' }) {
     const {
         leads, warmLeads, fetchLeads, fetchWarmLeads, isLoading,
         isModalOpen, openModal, closeModal, selectedLead, setSelectedLead,
-        updateLeadStatus, convertLeadToClient, rejectLead, scheduleVisit, deleteLead, user
+        updateLeadStatus, convertLeadToClient, rejectLead, restoreLead, scheduleVisit, deleteLead, user
     } = useStore();
 
     const [filter, setFilter] = useState({ status: '', search: '' });
@@ -291,7 +291,18 @@ export default function Leads({ mode = 'new' }) {
                                                         onClick={() => setViewLeadModal(lead)}
                                                         title="View Details"
                                                     >
-                                                        👁️ View
+                                                        👁️
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm btn-primary"
+                                                        onClick={() => {
+                                                            if (window.confirm('Restore this lead to Warm Leads?')) {
+                                                                restoreLead(lead.id);
+                                                            }
+                                                        }}
+                                                        title="Restore to Warm Leads"
+                                                    >
+                                                        ♻️
                                                     </button>
                                                     <button
                                                         className="btn btn-sm"

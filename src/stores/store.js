@@ -211,6 +211,17 @@ export const useStore = create(
                 }
             },
 
+            restoreLead: async (id) => {
+                try {
+                    await api(`/leads/${id}/restore`, { method: 'PATCH' });
+                    // Refresh archived leads list and warm leads
+                    get().fetchLeads({ archived: '1' });
+                    get().fetchWarmLeads();
+                } catch (error) {
+                    set({ error: error.message });
+                }
+            },
+
             // Site Visits
             visits: [],
             fetchVisits: async (fromDate, toDate) => {
