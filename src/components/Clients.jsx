@@ -14,7 +14,11 @@ export default function Clients() {
         phone: '',
         email: '',
         location: '',
-        source: 'manual'
+        source: 'manual',
+        deal_date: '',
+        price: '',
+        property_details: '',
+        documents_link: ''
     });
 
     useEffect(() => {
@@ -30,7 +34,7 @@ export default function Clients() {
         e.preventDefault();
         await createClient(newClient);
         setShowAddForm(false);
-        setNewClient({ name: '', phone: '', email: '', location: '', source: 'manual' });
+        setNewClient({ name: '', phone: '', email: '', location: '', source: 'manual', deal_date: '', price: '', property_details: '', documents_link: '' });
     };
 
     return (
@@ -219,6 +223,47 @@ export default function Clients() {
                                         className="form-input"
                                         value={newClient.location}
                                         onInput={(e) => setNewClient(c => ({ ...c, location: e.target.value }))}
+                                    />
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Deal Date</label>
+                                        <input
+                                            type="date"
+                                            className="form-input"
+                                            value={newClient.deal_date}
+                                            onInput={(e) => setNewClient(c => ({ ...c, deal_date: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Price (₹)</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            value={newClient.price}
+                                            onInput={(e) => setNewClient(c => ({ ...c, price: e.target.value }))}
+                                            placeholder="e.g. 5000000"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Property Details</label>
+                                    <textarea
+                                        className="form-input"
+                                        rows="3"
+                                        value={newClient.property_details}
+                                        onInput={(e) => setNewClient(c => ({ ...c, property_details: e.target.value }))}
+                                        placeholder="Description of the property..."
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Documents Link (Google Drive)</label>
+                                    <input
+                                        type="url"
+                                        className="form-input"
+                                        value={newClient.documents_link}
+                                        onInput={(e) => setNewClient(c => ({ ...c, documents_link: e.target.value }))}
+                                        placeholder="https://drive.google.com/..."
                                     />
                                 </div>
                             </div>

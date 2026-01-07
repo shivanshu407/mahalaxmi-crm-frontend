@@ -36,6 +36,8 @@ export default function Leads({ mode = 'new' }) {
     const [filter, setFilter] = useState({ status: '', search: '' });
     const [showVisitModal, setShowVisitModal] = useState(null); // lead ID to schedule
     const [visitData, setVisitData] = useState({ scheduled_at: '', location: '', notes: '' });
+    const [showConvertModal, setShowConvertModal] = useState(null); // lead to convert
+    const [dealData, setDealData] = useState({ deal_date: '', price: '', property_details: '', documents_link: '' });
 
     const isAdmin = user?.role === 'admin';
 
@@ -239,7 +241,7 @@ export default function Leads({ mode = 'new' }) {
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button
                                                         className="btn btn-sm btn-primary"
-                                                        onClick={() => convertLeadToClient(lead.id)}
+                                                        onClick={() => setShowConvertModal(lead)}
                                                         title="Convert to Client"
                                                     >
                                                         Convert
@@ -359,7 +361,7 @@ export default function Leads({ mode = 'new' }) {
                                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
                                     {mode === 'warm' ? (
                                         <>
-                                            <button className="btn btn-sm btn-primary" onClick={() => convertLeadToClient(lead.id)}>Convert</button>
+                                            <button className="btn btn-sm btn-primary" onClick={() => setShowConvertModal(lead)}>Convert</button>
                                             <button className="btn btn-sm" style={{ background: 'var(--accent-warning)', color: 'white' }} onClick={() => setShowVisitModal(lead)}>Visit</button>
                                         </>
                                     ) : (
@@ -437,6 +439,79 @@ export default function Leads({ mode = 'new' }) {
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => { setShowVisitModal(null); setVisitData({ scheduled_at: '', location: '', notes: '' }); }}>Cancel</button>
                                 <button type="submit" className="btn btn-primary">📅 Schedule Visit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Convert to Client Modal */}
+            {showConvertModal && (
+                <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowConvertModal(null); setDealData({ deal_date: '', price: '', property_details: '', documents_link: '' }); } }}>
+                    <div className="modal">
+                        <div className="modal-header">
+                            <h2 className="modal-title">🏆 Convert to Client</h2>
+                            <button className="btn-icon" onClick={() => { setShowConvertModal(null); setDealData({ deal_date: '', price: '', property_details: '', documents_link: '' }); }}>✕</button>
+                        </div>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            await convertLeadToClient(showConvertModal.id, dealData);
+                            setShowConvertModal(null);
+                            setDealData({ deal_date: '', price: '', property_details: '', documents_link: '' });
+                        }}>
+                            <div className="modal-body">
+                                <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+                                    <strong>{showConvertModal.name}</strong>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                                        {showConvertModal.phone} • {showConvertModal.location}
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Deal Date *</label>
+                                        <input
+                                            type="date"
+                                            className="form-input"
+                                            value={dealData.deal_date}
+                                            onInput={(e) => setDealData(d => ({ ...d, deal_date: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Price (₹)</label>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            value={dealData.price}
+                                            onInput={(e) => setDealData(d => ({ ...d, price: e.target.value }))}
+                                            placeholder="e.g. 5000000"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Property Details</label>
+                                    <textarea
+                                        className="form-input"
+                                        rows="3"
+                                        value={dealData.property_details}
+                                        onInput={(e) => setDealData(d => ({ ...d, property_details: e.target.value }))}
+                                        placeholder="Description of the property sold..."
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Documents Link (Google Drive)</label>
+                                    <input
+                                        type="url"
+                                        className="form-input"
+                                        value={dealData.documents_link}
+                                        onInput={(e) => setDealData(d => ({ ...d, documents_link: e.target.value }))}
+                                        placeholder="https://drive.google.com/..."
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => { setShowConvertModal(null); setDealData({ deal_date: '', price: '', property_details: '', documents_link: '' }); }}>Cancel</button>
+                                <button type="submit" className="btn btn-primary">🏆 Convert to Client</button>
                             </div>
                         </form>
                     </div>

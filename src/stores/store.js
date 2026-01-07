@@ -172,9 +172,12 @@ export const useStore = create(
             },
 
             // Lead Workflows
-            convertLeadToClient: async (id) => {
+            convertLeadToClient: async (id, dealData = {}) => {
                 try {
-                    await api(`/leads/${id}/convert-client`, { method: 'PUT' });
+                    await api(`/leads/${id}/convert-client`, {
+                        method: 'PUT',
+                        body: JSON.stringify(dealData)
+                    });
                     // Refresh all lists
                     get().fetchLeads();
                     get().fetchWarmLeads();
