@@ -749,6 +749,27 @@ tr:hover td {
     grid-template-columns: 1fr;
   }
 
+  /* Modal mobile improvements */
+  .modal {
+    max-width: calc(100% - 32px) !important;
+    margin: 16px;
+    max-height: calc(100vh - 32px);
+  }
+
+  .modal-body {
+    padding: var(--space-4);
+  }
+
+  .modal-header,
+  .modal-footer {
+    padding: var(--space-4);
+  }
+
+  /* Grid layouts in modals stack on mobile */
+  .modal-body [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+
   /* Stats Grid */
   .stats-grid {
     grid-template-columns: 1fr;
