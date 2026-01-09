@@ -17,6 +17,7 @@ export default function Sidebar({ isOpen, onClose }) {
             { id: 'leads', label: 'New Leads', icon: '👥' },
             { id: 'warm-leads', label: 'Warm Leads', icon: '🔥' },
             { id: 'clients', label: 'Clients', icon: '🏆' },
+            { id: 'inventory', label: 'Inventory', icon: '🏠' },
             { id: 'followups', label: 'Follow-ups', icon: '📞' },
             { id: 'archived-leads', label: 'Archives', icon: '🗑️' },
             { id: 'team', label: 'Team', icon: '👔' },
@@ -24,6 +25,7 @@ export default function Sidebar({ isOpen, onClose }) {
         : [
             { id: 'dashboard', label: 'Home', icon: '🏠' },
             { id: 'leads', label: 'Add Lead', icon: '➕' },
+            { id: 'inventory', label: 'Inventory', icon: '🏢' },
             { id: 'followups', label: 'My Follow-ups', icon: '📞' },
         ];
 

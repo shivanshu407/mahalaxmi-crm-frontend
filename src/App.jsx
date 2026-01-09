@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import Leads from './components/Leads';
 import FollowUps from './components/FollowUps';
 import Clients from './components/Clients';
+import Inventory from './components/Inventory';
 import Team from './components/Team';
 import Login from './components/Login';
 import Sidebar from './components/Sidebar';
@@ -43,6 +44,8 @@ export default function App() {
                 return <FollowUps />;
             case 'clients':
                 return <Clients />;
+            case 'inventory':
+                return <Inventory />;
             case 'team':
                 return <Team />;
             case 'dashboard':

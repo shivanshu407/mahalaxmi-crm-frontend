@@ -222,6 +222,56 @@ export const useStore = create(
                 }
             },
 
+            // Inventory (Properties)
+            inventory: [],
+            fetchInventory: async () => {
+                try {
+                    const items = await api('/inventory');
+                    set({ inventory: items });
+                } catch (error) {
+                    console.error('Failed to fetch inventory:', error);
+                }
+            },
+
+            addInventory: async (data) => {
+                try {
+                    await api('/inventory', {
+                        method: 'POST',
+                        body: JSON.stringify(data)
+                    });
+                    get().fetchInventory();
+                    return true;
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
+            updateInventory: async (id, data) => {
+                try {
+                    await api(`/inventory/${id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(data)
+                    });
+                    get().fetchInventory();
+                    return true;
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
+            deleteInventory: async (id) => {
+                try {
+                    await api(`/inventory/${id}`, { method: 'DELETE' });
+                    get().fetchInventory();
+                    return true;
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
             // Site Visits
             visits: [],
             fetchVisits: async (fromDate, toDate) => {
