@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import Leads from './components/Leads';
 import FollowUps from './components/FollowUps';
 import Clients from './components/Clients';
+import AllClients from './components/AllClients';
 import Inventory from './components/Inventory';
 import Projects from './components/Projects';
 import Team from './components/Team';
@@ -55,6 +56,8 @@ export default function App() {
                 return <Inventory />;
             case 'projects':
                 return <Projects />;
+            case 'all-clients':
+                return <AllClients />;
             case 'team':
                 return <Team />;
             case 'dashboard':

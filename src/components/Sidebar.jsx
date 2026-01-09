@@ -21,6 +21,7 @@ export default function Sidebar({ isOpen, onClose }) {
             { id: 'projects', label: 'Projects', icon: '🏗️' },
             { id: 'followups', label: 'Follow-ups', icon: '📞' },
             { id: 'archived-leads', label: 'Archives', icon: '🗑️' },
+            { id: 'all-clients', label: 'All Clients', icon: '📊' },
             { id: 'team', label: 'Team', icon: '👔' },
         ]
         : [
