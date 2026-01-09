@@ -40,14 +40,54 @@ export default function Dashboard() {
     };
 
     const isAdmin = user?.role === 'admin';
+    const { showToast } = useStore();
+
+    // Seed test data function
+    const seedTestData = async () => {
+        if (!confirm('This will CLEAR all existing data and insert fresh test data. Continue?')) return;
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://crm-mahalaxmi-backend.onrender.com'}/api/v1/seed-data`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const result = await response.json();
+            if (response.ok) {
+                showToast(`✅ ${result.message}`, 'success');
+                // Refresh dashboard data
+                fetchDashboard();
+                if (isAdmin) {
+                    fetchWarmLeads();
+                    fetchVisits(today, tomorrow);
+                }
+            } else {
+                showToast(result.error || 'Failed to seed data', 'error');
+            }
+        } catch (error) {
+            showToast('Failed to seed data', 'error');
+        }
+    };
 
     return (
         <div className="content-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
                 <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>Dashboard</h1>
-                <button className="btn btn-primary" onClick={() => { setCurrentView('leads'); useStore.getState().openModal(); }}>
-                    + New Lead
-                </button>
+                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                    {isAdmin && (
+                        <button
+                            className="btn btn-secondary"
+                            onClick={seedTestData}
+                            title="Clear all data and insert test data"
+                        >
+                            🧪 Seed Test Data
+                        </button>
+                    )}
+                    <button className="btn btn-primary" onClick={() => { setCurrentView('leads'); useStore.getState().openModal(); }}>
+                        + New Lead
+                    </button>
+                </div>
             </div>
 
             {/* Stats Grid - Only visible to Admin */}
