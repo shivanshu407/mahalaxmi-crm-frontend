@@ -4,9 +4,10 @@ import { useStore } from '../stores/store';
 /**
  * Team Management Component - Admin Only
  * Allows admin to create and manage employee accounts
+ * Shows detailed employee stats and lead submissions
  */
 export default function Team() {
-    const { user, users, fetchUsers, deleteUser, registerUser } = useStore();
+    const { user, users, fetchUsers, deleteUser, registerUser, leads, fetchLeads } = useStore();
     const [showAddForm, setShowAddForm] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -16,12 +17,30 @@ export default function Team() {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [selectedEmployee, setSelectedEmployee] = useState(null); // For viewing employee details
 
     const isAdmin = user?.role === 'admin';
 
     useEffect(() => {
         fetchUsers();
+        fetchLeads(); // Fetch leads to compute employee stats
     }, []);
+
+    // Compute employee stats from leads
+    const getEmployeeStats = (employeeName) => {
+        const employeeLeads = leads.filter(l => l.contact_person === employeeName);
+        const escalatedLeads = employeeLeads.filter(l => l.escalated === 1);
+        const warmLeads = employeeLeads.filter(l => ['interested', 'site_visit', 'negotiation'].includes(l.status));
+        const convertedLeads = employeeLeads.filter(l => l.status === 'client');
+
+        return {
+            total: employeeLeads.length,
+            escalated: escalatedLeads.length,
+            warm: warmLeads.length,
+            converted: convertedLeads.length,
+            leads: employeeLeads
+        };
+    };
 
     // If not admin, show access denied
     if (!isAdmin) {
@@ -71,6 +90,9 @@ export default function Team() {
     const employees = users.filter(u => u.role !== 'admin');
     const admins = users.filter(u => u.role === 'admin');
 
+    // Get total escalations for summary
+    const totalEscalations = leads.filter(l => l.escalated === 1).length;
+
     return (
         <div className="content-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
@@ -99,18 +121,22 @@ export default function Team() {
             )}
 
             {/* Summary Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
                 <div className="stat-card">
                     <span className="stat-label">Total Team</span>
                     <span className="stat-value">{users.length}</span>
                 </div>
                 <div className="stat-card">
-                    <span className="stat-label">Admins</span>
-                    <span className="stat-value">{admins.length}</span>
-                </div>
-                <div className="stat-card">
                     <span className="stat-label">Employees</span>
                     <span className="stat-value">{employees.length}</span>
+                </div>
+                <div className="stat-card">
+                    <span className="stat-label">Total Leads</span>
+                    <span className="stat-value">{leads.length}</span>
+                </div>
+                <div className="stat-card" style={{ borderLeft: '3px solid var(--accent-warning)' }}>
+                    <span className="stat-label">🔥 Escalations</span>
+                    <span className="stat-value" style={{ color: 'var(--accent-warning)' }}>{totalEscalations}</span>
                 </div>
             </div>
 
@@ -128,52 +154,79 @@ export default function Team() {
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Role</th>
-                                        <th>Status</th>
+                                        <th>📋 Submitted</th>
+                                        <th>🔥 Escalated</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {users.map(member => (
-                                        <tr key={member.id}>
-                                            <td style={{ fontWeight: '600' }}>{member.name}</td>
-                                            <td>{member.email}</td>
-                                            <td>
-                                                <span style={{
-                                                    background: member.role === 'admin' ? 'var(--accent-primary)' : 'var(--accent-success)',
-                                                    color: 'white',
-                                                    padding: '2px 8px',
-                                                    borderRadius: 'var(--radius-sm)',
-                                                    fontSize: 'var(--text-xs)',
-                                                    textTransform: 'uppercase',
-                                                }}>
-                                                    {member.role}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span style={{ color: 'var(--accent-success)' }}>● Active</span>
-                                            </td>
-                                            <td>
-                                                {member.role !== 'admin' && (
-                                                    <button
-                                                        className="btn btn-sm"
-                                                        style={{ background: '#666', padding: '4px 8px' }}
-                                                        onClick={async () => {
-                                                            if (window.confirm(`Are you sure you want to delete ${member.name}? This cannot be undone.`)) {
-                                                                try {
-                                                                    await deleteUser(member.id);
-                                                                } catch (err) {
-                                                                    alert('Failed to delete user: ' + err.message);
-                                                                }
-                                                            }
-                                                        }}
-                                                        title="Delete Employee"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {users.map(member => {
+                                        const stats = member.role !== 'admin' ? getEmployeeStats(member.name) : null;
+                                        return (
+                                            <tr key={member.id}>
+                                                <td style={{ fontWeight: '600' }}>{member.name}</td>
+                                                <td>{member.email}</td>
+                                                <td>
+                                                    <span style={{
+                                                        background: member.role === 'admin' ? 'var(--accent-primary)' : 'var(--accent-success)',
+                                                        color: 'white',
+                                                        padding: '2px 8px',
+                                                        borderRadius: 'var(--radius-sm)',
+                                                        fontSize: 'var(--text-xs)',
+                                                        textTransform: 'uppercase',
+                                                    }}>
+                                                        {member.role}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {stats ? (
+                                                        <span style={{ fontWeight: '600', color: 'var(--accent-primary)' }}>{stats.total}</span>
+                                                    ) : '-'}
+                                                </td>
+                                                <td>
+                                                    {stats ? (
+                                                        <span style={{
+                                                            fontWeight: '600',
+                                                            color: stats.escalated > 0 ? 'var(--accent-warning)' : 'var(--text-muted)'
+                                                        }}>
+                                                            {stats.escalated}
+                                                        </span>
+                                                    ) : '-'}
+                                                </td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        {member.role !== 'admin' && (
+                                                            <button
+                                                                className="btn btn-sm btn-secondary"
+                                                                onClick={() => setSelectedEmployee(member)}
+                                                                title="View Details"
+                                                            >
+                                                                👁️ Details
+                                                            </button>
+                                                        )}
+                                                        {member.role !== 'admin' && (
+                                                            <button
+                                                                className="btn btn-sm"
+                                                                style={{ background: '#666', padding: '4px 8px' }}
+                                                                onClick={async () => {
+                                                                    if (window.confirm(`Are you sure you want to delete ${member.name}? This cannot be undone.`)) {
+                                                                        try {
+                                                                            await deleteUser(member.id);
+                                                                        } catch (err) {
+                                                                            alert('Failed to delete user: ' + err.message);
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                title="Delete Employee"
+                                                            >
+                                                                🗑️
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -301,6 +354,113 @@ export default function Team() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Employee Details Modal */}
+            {selectedEmployee && (
+                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setSelectedEmployee(null)}>
+                    <div className="modal" style={{ maxWidth: '800px', maxHeight: '90vh', overflow: 'auto' }}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">👤 {selectedEmployee.name}'s Performance</h2>
+                            <button className="btn-icon" onClick={() => setSelectedEmployee(null)}>✕</button>
+                        </div>
+                        <div className="modal-body">
+                            {(() => {
+                                const stats = getEmployeeStats(selectedEmployee.name);
+                                return (
+                                    <>
+                                        {/* Stats Summary */}
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(4, 1fr)',
+                                            gap: 'var(--space-3)',
+                                            marginBottom: 'var(--space-4)'
+                                        }}>
+                                            <div className="stat-card" style={{ padding: 'var(--space-3)' }}>
+                                                <span className="stat-label" style={{ fontSize: '11px' }}>Total Submitted</span>
+                                                <span className="stat-value" style={{ fontSize: '20px' }}>{stats.total}</span>
+                                            </div>
+                                            <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-warning)' }}>
+                                                <span className="stat-label" style={{ fontSize: '11px' }}>🔥 Escalated</span>
+                                                <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-warning)' }}>{stats.escalated}</span>
+                                            </div>
+                                            <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-primary)' }}>
+                                                <span className="stat-label" style={{ fontSize: '11px' }}>🔥 Warm</span>
+                                                <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-primary)' }}>{stats.warm}</span>
+                                            </div>
+                                            <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-success)' }}>
+                                                <span className="stat-label" style={{ fontSize: '11px' }}>✅ Converted</span>
+                                                <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-success)' }}>{stats.converted}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Lead List */}
+                                        <h3 style={{ marginBottom: 'var(--space-3)', fontSize: '14px' }}>All Leads Submitted ({stats.total})</h3>
+                                        {stats.leads.length === 0 ? (
+                                            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-4)' }}>
+                                                No leads submitted yet.
+                                            </p>
+                                        ) : (
+                                            <div style={{ maxHeight: '400px', overflow: 'auto' }}>
+                                                <table style={{ width: '100%', fontSize: '13px' }}>
+                                                    <thead>
+                                                        <tr>
+                                                            <th style={{ padding: '8px' }}>Name</th>
+                                                            <th style={{ padding: '8px' }}>Phone</th>
+                                                            <th style={{ padding: '8px' }}>Location</th>
+                                                            <th style={{ padding: '8px' }}>Interest</th>
+                                                            <th style={{ padding: '8px' }}>Status</th>
+                                                            <th style={{ padding: '8px' }}>Escalated</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {stats.leads.map(lead => (
+                                                            <tr key={lead.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                                                <td style={{ padding: '8px', fontWeight: '500' }}>{lead.name}</td>
+                                                                <td style={{ padding: '8px' }}>{lead.phone}</td>
+                                                                <td style={{ padding: '8px' }}>{lead.location || '-'}</td>
+                                                                <td style={{ padding: '8px' }}>{lead.interest || '-'}</td>
+                                                                <td style={{ padding: '8px' }}>
+                                                                    <span style={{
+                                                                        padding: '2px 6px',
+                                                                        borderRadius: '10px',
+                                                                        fontSize: '10px',
+                                                                        fontWeight: '600',
+                                                                        textTransform: 'uppercase',
+                                                                        background: lead.status === 'client' ? '#D1FAE5' :
+                                                                            ['interested', 'site_visit', 'negotiation'].includes(lead.status) ? '#FEF3C7' :
+                                                                                lead.status === 'rejected' ? '#FEE2E2' : '#E5E7EB',
+                                                                        color: lead.status === 'client' ? '#065F46' :
+                                                                            ['interested', 'site_visit', 'negotiation'].includes(lead.status) ? '#92400E' :
+                                                                                lead.status === 'rejected' ? '#991B1B' : '#374151'
+                                                                    }}>
+                                                                        {lead.status?.replace('_', ' ') || 'new'}
+                                                                    </span>
+                                                                </td>
+                                                                <td style={{ padding: '8px', textAlign: 'center' }}>
+                                                                    {lead.escalated === 1 ? (
+                                                                        <span style={{ color: 'var(--accent-warning)' }}>🔥 Yes</span>
+                                                                    ) : (
+                                                                        <span style={{ color: 'var(--text-muted)' }}>-</span>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setSelectedEmployee(null)}>
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
