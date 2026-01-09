@@ -434,7 +434,7 @@ export default function Clients() {
                     <div className="modal">
                         <div className="modal-header">
                             <h2 className="modal-title">Add New Client</h2>
-                            <button className="btn-icon" onClick={() => setShowAddForm(false)}>✕</button>
+                            <button className="btn-icon" onClick={() => { console.log('Close X clicked'); setShowAddForm(false); }}>✕</button>
                         </div>
                         <form onSubmit={handleAdd}>
                             <div className="modal-body">
@@ -537,7 +537,7 @@ export default function Clients() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowAddForm(false)}>Cancel</button>
+                                <button type="button" className="btn btn-secondary" onClick={() => { console.log('Cancel clicked'); setShowAddForm(false); }}>Cancel</button>
                                 <button type="submit" className="btn btn-primary">Add Client</button>
                             </div>
                         </form>
