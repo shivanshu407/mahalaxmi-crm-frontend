@@ -56,21 +56,7 @@ export default function Inventory() {
     };
 
     const openAddModal = () => {
-        // Prefill with dummy data for easy testing
-        setFormData({
-            photo_link: '',
-            location: 'Andheri West, Mumbai',
-            size: '2 BHK - 850 sqft',
-            demand: 'High',
-            property_type: 'Residential Apartment',
-            listing_type: 'sale',
-            status: 'available',
-            is_hot: false,
-            price: '7500000',
-            other_details: 'Sea facing, 5th floor, covered parking'
-        });
-        setEditingItem(null);
-        setErrors({});
+        resetForm();
         setShowModal(true);
     };
 
