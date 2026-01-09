@@ -82,22 +82,28 @@ export default function Inventory() {
 
     return (
         <div className="leads-page">
-            <div className="page-header">
-                <h1>🏠 Property Inventory</h1>
+            {/* Header with title and action button on same row */}
+            <div className="page-header" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--space-6)'
+            }}>
+                <h1 style={{ margin: 0 }}>🏠 Property Inventory</h1>
                 <button className="btn btn-primary" onClick={openAddModal}>
                     ➕ Add Property
                 </button>
             </div>
 
-            {/* Search */}
-            <div className="filters-bar" style={{ marginBottom: 'var(--space-4)' }}>
+            {/* Search bar with proper spacing */}
+            <div style={{ marginBottom: 'var(--space-6)' }}>
                 <input
                     type="text"
                     className="form-input"
-                    placeholder="🔍 Search properties..."
+                    placeholder="🔍 Search by location, size, or demand..."
                     value={searchTerm}
                     onInput={(e) => setSearchTerm(e.target.value)}
-                    style={{ maxWidth: '300px' }}
+                    style={{ maxWidth: '400px', width: '100%' }}
                 />
             </div>
 
