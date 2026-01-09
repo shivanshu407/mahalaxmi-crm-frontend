@@ -6,7 +6,7 @@ import { useStore } from '../stores/store';
  * FEATURES: Searchable lead selection, lead details, outcome workflow
  */
 export default function FollowUps() {
-    const { followUps, fetchFollowUps, completeFollowUp, createFollowUp, createReminder, leads, fetchLeads, isLoading, user, showToast } = useStore();
+    const { followUps, fetchFollowUps, completeFollowUp, createFollowUp, createReminder, leads, fetchLeads, isLoading, user, showToast, users, fetchUsers } = useStore();
 
     // Modal & Form States
     const [showAddForm, setShowAddForm] = useState(false);
@@ -30,11 +30,15 @@ export default function FollowUps() {
         notes: ''
     });
 
+    // Admin: Employee filter
+    const [employeeFilter, setEmployeeFilter] = useState('');
+
     const isAdmin = user?.role === 'admin';
 
     useEffect(() => {
         fetchFollowUps(true);
         fetchLeads(); // Always fetch leads to select from
+        if (isAdmin) fetchUsers(); // Fetch users for employee filter
     }, []);
 
     // Filter leads for search - exclude clients and rejected leads
@@ -106,9 +110,25 @@ export default function FollowUps() {
         }
     };
 
+    // Get unique employees from follow-ups for filter dropdown
+    const employees = isAdmin ? [...new Set(followUps.map(f => f.user_name).filter(Boolean))] : [];
+
+    // Escalation stats per employee (for admin)
+    const escalationStats = isAdmin ? leads.reduce((acc, lead) => {
+        if (lead.escalated === 1 && lead.contact_person) {
+            acc[lead.contact_person] = (acc[lead.contact_person] || 0) + 1;
+        }
+        return acc;
+    }, {}) : {};
+
+    // Filter follow-ups by employee (admin only)
+    const filteredFollowUps = isAdmin && employeeFilter
+        ? followUps.filter(f => f.user_name === employeeFilter)
+        : followUps;
+
     // Group by date
     const today = new Date().toDateString();
-    const groupedFollowUps = followUps.reduce((acc, f) => {
+    const groupedFollowUps = filteredFollowUps.reduce((acc, f) => {
         const date = new Date(f.scheduled_at).toDateString();
         let group = 'Upcoming';
         if (date === today) group = 'Today';
@@ -121,12 +141,56 @@ export default function FollowUps() {
 
     return (
         <div className="content-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
                 <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700' }}>Follow-ups</h1>
                 <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
                     + Schedule Follow-up
                 </button>
             </div>
+
+            {/* Admin: Employee Filter & Escalation Stats */}
+            {isAdmin && (
+                <div style={{ display: 'flex', gap: 'var(--space-4)', marginBottom: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <select
+                        className="form-select"
+                        value={employeeFilter}
+                        onChange={(e) => setEmployeeFilter(e.target.value)}
+                        style={{ minWidth: '180px' }}
+                    >
+                        <option value="">All Employees</option>
+                        {employees.map(emp => (
+                            <option key={emp} value={emp}>{emp}</option>
+                        ))}
+                    </select>
+
+                    {/* Escalation Stats */}
+                    <div style={{
+                        display: 'flex',
+                        gap: 'var(--space-3)',
+                        flexWrap: 'wrap',
+                        background: 'var(--bg-tertiary)',
+                        padding: '8px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '12px'
+                    }}>
+                        <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>🔥 Escalations:</span>
+                        {Object.entries(escalationStats).length > 0 ? (
+                            Object.entries(escalationStats).map(([emp, count]) => (
+                                <span key={emp} style={{
+                                    background: 'var(--accent-primary)',
+                                    color: 'white',
+                                    padding: '2px 8px',
+                                    borderRadius: '10px'
+                                }}>
+                                    {emp}: {count}
+                                </span>
+                            ))
+                        ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>None yet</span>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {isLoading && followUps.length === 0 ? (
                 <div className="loading" />
@@ -201,6 +265,22 @@ export default function FollowUps() {
                                                 {followUp.notes && (
                                                     <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 'var(--space-2)', fontStyle: 'italic' }}>
                                                         "{followUp.notes}"
+                                                    </div>
+                                                )}
+                                                {/* Show scheduled by - for admin */}
+                                                {isAdmin && followUp.user_name && (
+                                                    <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Scheduled by:</span>
+                                                        <span style={{
+                                                            fontSize: '11px',
+                                                            background: 'var(--accent-success)',
+                                                            color: 'white',
+                                                            padding: '2px 8px',
+                                                            borderRadius: '10px',
+                                                            fontWeight: '500'
+                                                        }}>
+                                                            {followUp.user_name}
+                                                        </span>
                                                     </div>
                                                 )}
                                             </div>
