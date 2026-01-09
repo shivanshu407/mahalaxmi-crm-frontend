@@ -114,6 +114,82 @@ export default function Clients() {
         setIsEditing(false);
     };
 
+    // CSV Upload State
+    const [isUploading, setIsUploading] = useState(false);
+
+    // Download CSV Template
+    const downloadTemplate = () => {
+        const headers = ['name', 'phone', 'email', 'location', 'source', 'deal_date', 'price', 'property_details', 'documents_link'];
+        const sample = ['John Doe', '9876543210', 'john@email.com', 'Mumbai', 'Referral', '2026-01-15', '5000000', '2BHK Andheri', 'https://drive.google.com/...'];
+        const csv = [headers.join(','), sample.join(',')].join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'clients_template.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Template downloaded', 'success');
+    };
+
+    // Handle CSV File Upload
+    const handleCSVUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const text = await file.text();
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length < 2) {
+                showToast('CSV file must have headers and at least one data row', 'error');
+                return;
+            }
+
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const clients = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const client = {};
+                headers.forEach((header, idx) => {
+                    client[header] = values[idx]?.trim() || '';
+                });
+                if (client.name) clients.push(client);
+            }
+
+            if (clients.length === 0) {
+                showToast('No valid clients found in CSV', 'error');
+                return;
+            }
+
+            // Call bulk upload API
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://crm-mahalaxmi-backend.onrender.com'}/api/v1/clients/bulk`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ clients })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                showToast(`${result.message}`, result.errorCount > 0 ? 'warning' : 'success');
+                fetchClients();
+            } else {
+                showToast(result.error || 'Upload failed', 'error');
+            }
+        } catch (error) {
+            console.error('CSV upload error:', error);
+            showToast('Failed to parse CSV file', 'error');
+        } finally {
+            setIsUploading(false);
+            e.target.value = ''; // Reset file input
+        }
+    };
+
     return (
         <div className="content-section">
             <div style={{
@@ -137,6 +213,32 @@ export default function Clients() {
                             value={searchTerm}
                             onInput={handleSearch}
                         />
+                    )}
+                    {isAdmin && (
+                        <>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={downloadTemplate}
+                                title="Download CSV template"
+                                style={{ whiteSpace: 'nowrap' }}
+                            >
+                                📥 Template
+                            </button>
+                            <label
+                                className="btn btn-secondary"
+                                style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                                title="Upload CSV file to import clients"
+                            >
+                                {isUploading ? '⏳ Uploading...' : '📤 Upload CSV'}
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    onChange={handleCSVUpload}
+                                    style={{ display: 'none' }}
+                                    disabled={isUploading}
+                                />
+                            </label>
+                        </>
                     )}
                     <button className="btn btn-primary" onClick={() => setShowAddForm(true)} style={{ whiteSpace: 'nowrap' }}>
                         + Add Client
