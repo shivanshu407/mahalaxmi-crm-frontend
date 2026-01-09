@@ -646,6 +646,37 @@ export default function Leads({ mode = 'new' }) {
                                         <div>{viewLeadModal.interest || '-'}</div>
                                     </div>
                                 </div>
+                                {/* Submitted By - who added this lead */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Submitted By</div>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            color: viewLeadModal.contact_person ? 'var(--text-primary)' : 'var(--text-muted)'
+                                        }}>
+                                            {viewLeadModal.contact_person ? (
+                                                <>
+                                                    <span style={{
+                                                        background: 'var(--accent-primary)',
+                                                        color: 'white',
+                                                        padding: '2px 8px',
+                                                        borderRadius: '12px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500'
+                                                    }}>
+                                                        {viewLeadModal.contact_person}
+                                                    </span>
+                                                </>
+                                            ) : '-'}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Motive to Buy</div>
+                                        <div>{viewLeadModal.motive_to_buy || '-'}</div>
+                                    </div>
+                                </div>
                                 {viewLeadModal.notes && (
                                     <div>
                                         <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Notes</div>
@@ -678,17 +709,18 @@ export default function Leads({ mode = 'new' }) {
 // Simplified form for employees - only input, no viewing data
 function EmployeeLeadForm() {
     const { createLead, user } = useStore();
+    // Pre-filled with dummy data for easier testing
     const [formData, setFormData] = useState({
-        name: '',
-        phone: '',
-        email: '',
-        budget_min: '',
-        budget_max: '',
-        location: '',
-        interest: '',
-        motive_to_buy: '',
+        name: 'Raj Sharma',
+        phone: '9876543210',
+        email: 'raj.sharma@email.com',
+        budget_min: '50',
+        budget_max: '80',
+        location: 'Gurugram',
+        interest: '2 BHK',
+        motive_to_buy: 'Investment',
         contact_person: user?.name || '', // Auto-fill with logged-in user's name
-        source: '',
+        source: 'Facebook',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
