@@ -30,13 +30,13 @@ export default function Team() {
     const getEmployeeStats = (employeeName) => {
         const employeeLeads = leads.filter(l => l.contact_person === employeeName);
         const escalatedLeads = employeeLeads.filter(l => l.escalated === 1);
-        const warmLeads = employeeLeads.filter(l => ['interested', 'site_visit', 'negotiation'].includes(l.status));
+        const rejectedLeads = employeeLeads.filter(l => l.status === 'rejected');
         const convertedLeads = employeeLeads.filter(l => l.status === 'client');
 
         return {
             total: employeeLeads.length,
             escalated: escalatedLeads.length,
-            warm: warmLeads.length,
+            rejected: rejectedLeads.length,
             converted: convertedLeads.length,
             leads: employeeLeads
         };
@@ -386,9 +386,9 @@ export default function Team() {
                                                 <span className="stat-label" style={{ fontSize: '11px' }}>🔥 Escalated</span>
                                                 <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-warning)' }}>{stats.escalated}</span>
                                             </div>
-                                            <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-primary)' }}>
-                                                <span className="stat-label" style={{ fontSize: '11px' }}>🔥 Warm</span>
-                                                <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-primary)' }}>{stats.warm}</span>
+                                            <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-danger)' }}>
+                                                <span className="stat-label" style={{ fontSize: '11px' }}>❌ Rejected</span>
+                                                <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-danger)' }}>{stats.rejected}</span>
                                             </div>
                                             <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-success)' }}>
                                                 <span className="stat-label" style={{ fontSize: '11px' }}>✅ Converted</span>
