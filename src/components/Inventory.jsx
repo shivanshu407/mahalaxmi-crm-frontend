@@ -139,11 +139,39 @@ export default function Inventory() {
         }
     };
 
-    const filteredInventory = inventory.filter(item =>
-        item.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.size?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.demand?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filter state
+    const [filters, setFilters] = useState({
+        property_type: '',
+        listing_type: '',
+        status: ''
+    });
+
+    // Apply all filters
+    const filteredInventory = inventory.filter(item => {
+        // Search filter
+        const matchesSearch = !searchTerm ||
+            item.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.size?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.demand?.toLowerCase().includes(searchTerm.toLowerCase());
+
+        // Property type filter
+        const matchesType = !filters.property_type || item.property_type === filters.property_type;
+
+        // Listing type filter
+        const matchesListing = !filters.listing_type || item.listing_type === filters.listing_type;
+
+        // Status filter
+        const matchesStatus = !filters.status || item.status === filters.status;
+
+        return matchesSearch && matchesType && matchesListing && matchesStatus;
+    });
+
+    const clearFilters = () => {
+        setFilters({ property_type: '', listing_type: '', status: '' });
+        setSearchTerm('');
+    };
+
+    const hasActiveFilters = filters.property_type || filters.listing_type || filters.status || searchTerm;
 
     return (
         <div className="leads-page">
@@ -161,7 +189,7 @@ export default function Inventory() {
             </div>
 
             {/* Search bar with proper spacing */}
-            <div style={{ marginBottom: 'var(--space-6)' }}>
+            <div style={{ marginBottom: 'var(--space-4)' }}>
                 <input
                     type="text"
                     className="form-input"
@@ -170,6 +198,60 @@ export default function Inventory() {
                     onInput={(e) => setSearchTerm(e.target.value)}
                     style={{ maxWidth: '400px', width: '100%' }}
                 />
+            </div>
+
+            {/* Filter dropdowns */}
+            <div style={{
+                display: 'flex',
+                gap: 'var(--space-3)',
+                flexWrap: 'wrap',
+                marginBottom: 'var(--space-6)',
+                alignItems: 'center'
+            }}>
+                <select
+                    className="form-select"
+                    value={filters.property_type}
+                    onChange={(e) => setFilters(f => ({ ...f, property_type: e.target.value }))}
+                    style={{ minWidth: '160px' }}
+                >
+                    <option value="">All Types</option>
+                    {PROPERTY_TYPES.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
+                </select>
+
+                <select
+                    className="form-select"
+                    value={filters.listing_type}
+                    onChange={(e) => setFilters(f => ({ ...f, listing_type: e.target.value }))}
+                    style={{ minWidth: '120px' }}
+                >
+                    <option value="">Sale & Rent</option>
+                    <option value="sale">🏠 For Sale</option>
+                    <option value="rent">🏷️ For Rent</option>
+                </select>
+
+                <select
+                    className="form-select"
+                    value={filters.status}
+                    onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
+                    style={{ minWidth: '130px' }}
+                >
+                    <option value="">All Status</option>
+                    <option value="available">✓ Available</option>
+                    <option value="engaged">🔒 Engaged</option>
+                    <option value="sold">✓ Sold</option>
+                </select>
+
+                {hasActiveFilters && (
+                    <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={clearFilters}
+                        style={{ marginLeft: 'auto' }}
+                    >
+                        ✕ Clear Filters
+                    </button>
+                )}
             </div>
 
             {isLoading && inventory.length === 0 ? (

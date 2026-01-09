@@ -7,7 +7,11 @@ import { useStore } from '../stores/store';
  * SUSTAINABILITY: Minimal DOM nodes for lower memory usage
  */
 export default function Dashboard() {
-    const { dashboardStats, fetchDashboard, warmLeads, fetchWarmLeads, visits, fetchVisits, isLoading, setCurrentView, user } = useStore();
+    const {
+        dashboardStats, fetchDashboard, warmLeads, fetchWarmLeads,
+        visits, fetchVisits, isLoading, setCurrentView, user,
+        dueReminders, fetchDueReminders, completeReminder
+    } = useStore();
 
     // Get today and tomorrow dates for visit filter
     const today = new Date().toISOString().split('T')[0];
@@ -15,6 +19,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         fetchDashboard();
+        fetchDueReminders(); // Fetch due cold lead reminders
         if (user?.role === 'admin') {
             fetchWarmLeads();
             fetchVisits(today, tomorrow);
@@ -157,6 +162,43 @@ export default function Dashboard() {
                                         </div>
                                         <div style={{ textAlign: 'right', fontSize: '14px', color: 'var(--accent-warning)' }}>
                                             {new Date(followup.scheduled_at).toLocaleDateString('en-IN')}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Cold Lead Reminders - Due Today/Overdue */}
+                    {dueReminders?.length > 0 && (
+                        <div className="card" style={{ borderLeft: '4px solid var(--accent-warning)' }}>
+                            <div className="card-header">
+                                <h2 className="card-title">❄️ Cold Lead Reminders</h2>
+                                <span className="pipeline-count">{dueReminders.length}</span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', padding: 'var(--space-4)' }}>
+                                {dueReminders.map(reminder => (
+                                    <div key={reminder.id} style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: 'var(--space-3)',
+                                        background: 'var(--bg-tertiary)',
+                                        borderRadius: 'var(--radius-md)',
+                                        gap: '8px'
+                                    }}>
+                                        <div style={{ flex: 1 }}>
+                                            <strong>{reminder.lead_name || 'Lead'}</strong>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{reminder.notes || 'No notes'}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--accent-warning)' }}>
+                                                Due: {new Date(reminder.remind_at).toLocaleDateString('en-IN')}
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            {reminder.lead_phone && (
+                                                <a href={`tel:${reminder.lead_phone}`} className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>📞</a>
+                                            )}
+                                            <button className="btn btn-success btn-sm" onClick={() => completeReminder(reminder.id)}>✓</button>
                                         </div>
                                     </div>
                                 ))}

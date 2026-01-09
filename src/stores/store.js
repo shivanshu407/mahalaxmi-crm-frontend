@@ -73,6 +73,10 @@ export const useStore = create(
             currentView: 'dashboard',
             isModalOpen: false,
 
+            // Cold Lead Reminders state
+            coldReminders: [],
+            dueReminders: [],
+
             // Toast notification state
             toast: null,
             showToast: (message, type = 'success', duration = 3000) => {
@@ -85,6 +89,44 @@ export const useStore = create(
             setCurrentView: (view) => set({ currentView: view }),
             openModal: () => set({ isModalOpen: true }),
             closeModal: () => set({ isModalOpen: false }),
+
+            // Cold Reminders Actions
+            fetchReminders: async () => {
+                try {
+                    const reminders = await api('/reminders');
+                    set({ coldReminders: reminders });
+                } catch (error) {
+                    console.error('Fetch reminders error:', error);
+                }
+            },
+
+            fetchDueReminders: async () => {
+                try {
+                    const reminders = await api('/reminders/due');
+                    set({ dueReminders: reminders });
+                } catch (error) {
+                    console.error('Fetch due reminders error:', error);
+                }
+            },
+
+            createReminder: async (reminderData) => {
+                await api('/reminders', {
+                    method: 'POST',
+                    body: JSON.stringify(reminderData)
+                });
+                get().fetchReminders();
+            },
+
+            completeReminder: async (id) => {
+                await api(`/reminders/${id}/complete`, { method: 'PATCH' });
+                get().fetchReminders();
+                get().fetchDueReminders();
+            },
+
+            deleteReminder: async (id) => {
+                await api(`/reminders/${id}`, { method: 'DELETE' });
+                get().fetchReminders();
+            },
 
 
             // Auth
