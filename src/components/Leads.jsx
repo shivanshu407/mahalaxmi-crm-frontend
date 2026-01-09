@@ -214,7 +214,12 @@ export default function Leads({ mode = 'new' }) {
                             </thead>
                             <tbody>
                                 {filteredLeads.map(lead => (
-                                    <tr key={lead.id}>
+                                    <tr
+                                        key={lead.id}
+                                        onClick={() => setViewLeadModal(lead)}
+                                        style={{ cursor: 'pointer' }}
+                                        title="Click to view details"
+                                    >
                                         <td style={{ fontWeight: '500' }}>{lead.name}</td>
                                         <td>{lead.phone || '-'}</td>
                                         <td>{lead.location || '-'}</td>
@@ -224,7 +229,7 @@ export default function Leads({ mode = 'new' }) {
                                                 : '-'
                                             }
                                         </td>
-                                        <td>
+                                        <td onClick={(e) => e.stopPropagation()}>
                                             {mode === 'new' ? (
                                                 <select
                                                     className="form-select"
@@ -245,7 +250,7 @@ export default function Leads({ mode = 'new' }) {
                                                 {lead.interest ? `Interested in ${lead.interest}` : '-'}
                                             </td>
                                         )}
-                                        <td>
+                                        <td onClick={(e) => e.stopPropagation()}>
                                             {mode === 'warm' ? (
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button
