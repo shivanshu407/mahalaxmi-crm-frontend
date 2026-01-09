@@ -8,6 +8,7 @@ import Inventory from './components/Inventory';
 import Team from './components/Team';
 import Login from './components/Login';
 import Sidebar from './components/Sidebar';
+import Toast from './components/Toast';
 
 /**
  * Main App Component
@@ -28,7 +29,12 @@ export default function App() {
 
     // Show login if not authenticated
     if (!isAuthenticated) {
-        return <Login />;
+        return (
+            <>
+                <Login />
+                <Toast />
+            </>
+        );
     }
 
     // Render current view
@@ -78,6 +84,10 @@ export default function App() {
             {isMobileMenuOpen && (
                 <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)} />
             )}
+
+            {/* Toast Notifications */}
+            <Toast />
         </div>
     );
 }
+

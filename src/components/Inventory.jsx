@@ -4,12 +4,14 @@ import { useStore } from '../stores/store';
 export default function Inventory() {
     const {
         inventory, fetchInventory, addInventory, updateInventory, deleteInventory,
-        user, isLoading
+        user, isLoading, showToast
     } = useStore();
 
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [viewItem, setViewItem] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
         photo_link: '',
         location: '',
@@ -29,6 +31,7 @@ export default function Inventory() {
     const resetForm = () => {
         setFormData({ photo_link: '', location: '', size: '', demand: '', price: '', other_details: '' });
         setEditingItem(null);
+        setErrors({});
     };
 
     const openAddModal = () => {
@@ -46,6 +49,7 @@ export default function Inventory() {
             price: item.price || '',
             other_details: item.other_details || ''
         });
+        setErrors({});
         setShowModal(true);
     };
 
@@ -54,23 +58,45 @@ export default function Inventory() {
         resetForm();
     };
 
+    const validateForm = () => {
+        const newErrors = {};
+        if (!formData.location.trim()) {
+            newErrors.location = 'Location is required';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateForm()) return;
+
+        setIsSubmitting(true);
         try {
             if (editingItem) {
                 await updateInventory(editingItem.id, formData);
+                showToast('Property updated successfully', 'success');
             } else {
                 await addInventory(formData);
+                showToast('Property added to inventory', 'success');
             }
             closeModal();
         } catch (error) {
             console.error('Error saving inventory:', error);
+            showToast(error.message || 'Failed to save property', 'error');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const handleDelete = (item) => {
+    const handleDelete = async (item) => {
         if (window.confirm(`Delete property at "${item.location}"?`)) {
-            deleteInventory(item.id);
+            try {
+                await deleteInventory(item.id);
+                showToast('Property deleted', 'success');
+            } catch (error) {
+                showToast('Failed to delete property', 'error');
+            }
         }
     };
 
@@ -186,12 +212,17 @@ export default function Inventory() {
                                     <label className="form-label">Location *</label>
                                     <input
                                         type="text"
-                                        className="form-input"
+                                        className={`form-input ${errors.location ? 'error' : ''}`}
                                         value={formData.location}
                                         onInput={(e) => setFormData(f => ({ ...f, location: e.target.value }))}
                                         placeholder="e.g. Andheri West, Mumbai"
                                         required
                                     />
+                                    {errors.location && (
+                                        <span style={{ color: 'var(--accent-danger)', fontSize: '12px', marginTop: '4px' }}>
+                                            {errors.location}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="form-row">
                                     <div className="form-group">
@@ -247,9 +278,11 @@ export default function Inventory() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeModal}>Cancel</button>
-                                <button type="submit" className="btn btn-primary">
-                                    {editingItem ? '💾 Save Changes' : '➕ Add Property'}
+                                <button type="button" className="btn btn-secondary" onClick={closeModal} disabled={isSubmitting}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                                    {isSubmitting ? '⏳ Saving...' : (editingItem ? '💾 Save Changes' : '➕ Add Property')}
                                 </button>
                             </div>
                         </form>

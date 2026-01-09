@@ -7,12 +7,14 @@ import { useStore } from '../stores/store';
  * SECURITY: Admin sees all, Employee can only add (not view)
  */
 export default function Clients() {
-    const { clients, fetchClients, createClient, deleteClient, updateClient, isLoading, user, sources } = useStore();
+    const { clients, fetchClients, createClient, deleteClient, updateClient, isLoading, user, sources, showToast } = useStore();
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
     const [editData, setEditData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState({});
     const [newClient, setNewClient] = useState({
         name: '',
         phone: '',
@@ -38,19 +40,50 @@ export default function Clients() {
         fetchClients(e.target.value);
     };
 
+    const validateForm = (data) => {
+        const newErrors = {};
+        if (!data.name?.trim()) {
+            newErrors.name = 'Name is required';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleAdd = async (e) => {
         e.preventDefault();
-        await createClient(newClient);
-        setShowAddForm(false);
-        setNewClient({ name: '', phone: '', email: '', location: '', source: 'manual', deal_date: '', price: '', property_details: '', documents_link: '' });
+        if (!validateForm(newClient)) return;
+
+        setIsSubmitting(true);
+        try {
+            await createClient(newClient);
+            showToast('Client added successfully', 'success');
+            setShowAddForm(false);
+            setNewClient({ name: '', phone: '', email: '', location: '', source: '', deal_date: '', price: '', property_details: '', documents_link: '' });
+            setErrors({});
+        } catch (error) {
+            showToast(error.message || 'Failed to add client', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleEdit = async (e) => {
         e.preventDefault();
-        await updateClient(selectedClient.id, editData);
-        setSelectedClient(null);
-        setEditData(null);
-        setIsEditing(false);
+        if (!validateForm(editData)) return;
+
+        setIsSubmitting(true);
+        try {
+            await updateClient(selectedClient.id, editData);
+            showToast('Client updated successfully', 'success');
+            setSelectedClient(null);
+            setEditData(null);
+            setIsEditing(false);
+            setErrors({});
+        } catch (error) {
+            showToast(error.message || 'Failed to update client', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const openViewModal = (client) => {

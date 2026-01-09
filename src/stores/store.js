@@ -73,15 +73,19 @@ export const useStore = create(
             currentView: 'dashboard',
             isModalOpen: false,
 
-            // UI state (selectedLead is removed as per instruction's implied state)
-            // selectedLead: null, // Removed
+            // Toast notification state
+            toast: null,
+            showToast: (message, type = 'success', duration = 3000) => {
+                set({ toast: { message, type, duration } });
+            },
+            clearToast: () => set({ toast: null }),
 
             // Actions
             setIsLoading: (isLoading) => set({ isLoading }),
             setCurrentView: (view) => set({ currentView: view }),
             openModal: () => set({ isModalOpen: true }),
             closeModal: () => set({ isModalOpen: false }),
-            // setSelectedLead and clearError are removed as per instruction's implied actions
+
 
             // Auth
             login: async (email, password) => {
