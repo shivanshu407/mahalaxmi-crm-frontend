@@ -285,7 +285,7 @@ export default function Clients() {
                             </label>
                         </>
                     )}
-                    <button className="btn btn-primary" onClick={() => setShowAddForm(true)} style={{ whiteSpace: 'nowrap' }}>
+                    <button className="btn btn-primary" onClick={() => { console.log('Add Client clicked, showAddForm before:', showAddForm); setShowAddForm(true); console.log('setShowAddForm called'); }} style={{ whiteSpace: 'nowrap' }}>
                         + Add Client
                     </button>
                 </div>
