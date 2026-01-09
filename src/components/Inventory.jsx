@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'preact/hooks';
-import useStore from '../stores/store';
+import { useStore } from '../stores/store';
 
 export default function Inventory() {
     const {
