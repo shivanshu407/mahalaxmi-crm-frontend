@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState, useRef } from 'preact/hooks';
 import { useStore } from '../stores/store';
 
 /**
@@ -15,6 +15,7 @@ export default function Clients() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+    const searchTimeoutRef = useRef(null);
     const [newClient, setNewClient] = useState({
         name: '',
         phone: '',
@@ -35,9 +36,20 @@ export default function Clients() {
         }
     }, [isAdmin]);
 
+    // Debounced search to prevent excessive API calls
     const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-        fetchClients(e.target.value);
+        const value = e.target.value;
+        setSearchTerm(value);
+
+        // Clear previous timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        // Debounce: wait 300ms before fetching
+        searchTimeoutRef.current = setTimeout(() => {
+            fetchClients(value);
+        }, 300);
     };
 
     const validateForm = (data) => {
