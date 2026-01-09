@@ -156,7 +156,7 @@ export default function Dashboard() {
                                             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{followup.notes}</div>
                                         </div>
                                         <div style={{ textAlign: 'right', fontSize: '14px', color: 'var(--accent-warning)' }}>
-                                            {new Date(followup.scheduled_at).toLocaleDateString()}
+                                            {new Date(followup.scheduled_at).toLocaleDateString('en-IN')}
                                         </div>
                                     </div>
                                 ))}
@@ -212,7 +212,7 @@ export default function Dashboard() {
                                         <div className="lead-card-name">{followUp.lead_name || 'Lead'}</div>
                                         <div className="lead-card-meta">
                                             <span>{followUp.type}</span>
-                                            <span>{new Date(followUp.scheduled_at).toLocaleDateString()}</span>
+                                            <span>{new Date(followUp.scheduled_at).toLocaleDateString('en-IN')}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -243,7 +243,7 @@ export default function Dashboard() {
                                     <div className="lead-card-name">{followUp.lead_name || 'Lead'}</div>
                                     <div className="lead-card-meta">
                                         <span>{followUp.type}</span>
-                                        <span>{new Date(followUp.scheduled_at).toLocaleDateString()}</span>
+                                        <span>{new Date(followUp.scheduled_at).toLocaleDateString('en-IN')}</span>
                                     </div>
                                 </div>
                             ))}

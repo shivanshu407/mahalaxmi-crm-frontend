@@ -4,9 +4,10 @@ import { useStore } from '../stores/store';
 /**
  * Clients Component
  * FEATURES: List clients, Search, Manual Add Client
+ * SECURITY: Admin sees all, Employee can only add (not view)
  */
 export default function Clients() {
-    const { clients, fetchClients, createClient, deleteClient, updateClient, isLoading } = useStore();
+    const { clients, fetchClients, createClient, deleteClient, updateClient, isLoading, user, sources } = useStore();
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddForm, setShowAddForm] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
@@ -17,16 +18,20 @@ export default function Clients() {
         phone: '',
         email: '',
         location: '',
-        source: 'manual',
+        source: '',
         deal_date: '',
         price: '',
         property_details: '',
         documents_link: ''
     });
 
+    const isAdmin = user?.role === 'admin';
+
     useEffect(() => {
-        fetchClients();
-    }, []);
+        if (isAdmin) {
+            fetchClients();
+        }
+    }, [isAdmin]);
 
     const handleSearch = (e) => {
         setSearchTerm(e.target.value);
@@ -86,23 +91,39 @@ export default function Clients() {
                 marginBottom: 'var(--space-6)',
                 gap: 'var(--space-4)'
             }}>
-                <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', margin: 0 }}>Clients</h1>
+                <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: '700', margin: 0 }}>
+                    {isAdmin ? 'Clients' : 'Add New Client'}
+                </h1>
                 <div style={{ display: 'flex', gap: 'var(--space-4)', width: 'auto', flexWrap: 'wrap' }}>
-                    <input
-                        type="text"
-                        placeholder="Search clients..."
-                        className="form-input"
-                        style={{ width: '200px', flex: '1 1 auto' }}
-                        value={searchTerm}
-                        onInput={handleSearch}
-                    />
+                    {isAdmin && (
+                        <input
+                            type="text"
+                            placeholder="Search clients..."
+                            className="form-input"
+                            style={{ width: '200px', flex: '1 1 auto' }}
+                            value={searchTerm}
+                            onInput={handleSearch}
+                        />
+                    )}
                     <button className="btn btn-primary" onClick={() => setShowAddForm(true)} style={{ whiteSpace: 'nowrap' }}>
                         + Add Client
                     </button>
                 </div>
             </div>
 
-            {isLoading && clients.length === 0 ? (
+            {/* Employee view - just the add form prompt */}
+            {!isAdmin ? (
+                <div className="card full-width" style={{ padding: 'var(--space-8)', textAlign: 'center' }}>
+                    <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)' }}>👥</div>
+                    <h2 style={{ marginBottom: 'var(--space-2)' }}>Add a New Client</h2>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
+                        Click the button above to add a new client to the system.
+                    </p>
+                    <button className="btn btn-primary btn-lg" onClick={() => setShowAddForm(true)}>
+                        + Add New Client
+                    </button>
+                </div>
+            ) : isLoading && clients.length === 0 ? (
                 <div className="loading" />
             ) : (
                 <div className="card full-width">
@@ -267,14 +288,31 @@ export default function Clients() {
                                         />
                                     </div>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Location</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={newClient.location}
-                                        onInput={(e) => setNewClient(c => ({ ...c, location: e.target.value }))}
-                                    />
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Location</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={newClient.location}
+                                            onInput={(e) => setNewClient(c => ({ ...c, location: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Source</label>
+                                        <select
+                                            className="form-select"
+                                            value={newClient.source}
+                                            onChange={(e) => setNewClient(c => ({ ...c, source: e.target.value }))}
+                                        >
+                                            <option value="">Select Source</option>
+                                            {sources.map(s => (
+                                                <option key={s.id} value={s.name}>{s.name}</option>
+                                            ))}
+                                            <option value="Manual Entry">Manual Entry</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div className="form-row">
                                     <div className="form-group">
@@ -426,7 +464,7 @@ export default function Clients() {
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                             <div>
                                                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Deal Date</div>
-                                                <div>{selectedClient.deal_date ? new Date(selectedClient.deal_date).toLocaleDateString() : '-'}</div>
+                                                <div>{selectedClient.deal_date ? new Date(selectedClient.deal_date).toLocaleDateString('en-IN') : '-'}</div>
                                             </div>
                                             <div>
                                                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Price</div>

@@ -132,7 +132,7 @@ export default function Leads({ mode = 'new' }) {
                                             <span className={`status-badge ${lead.status}`}>{lead.status}</span>
                                         </td>
                                         <td style={{ padding: 'var(--space-3)', fontSize: '12px', color: 'var(--text-muted)' }}>
-                                            {new Date(lead.created_at).toLocaleDateString()}
+                                            {new Date(lead.created_at).toLocaleDateString('en-IN')}
                                         </td>
                                     </tr>
                                 ))}
@@ -656,11 +656,11 @@ export default function Leads({ mode = 'new' }) {
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                     <div>
                                         <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Created</div>
-                                        <div>{viewLeadModal.created_at ? new Date(viewLeadModal.created_at).toLocaleDateString() : '-'}</div>
+                                        <div>{viewLeadModal.created_at ? new Date(viewLeadModal.created_at).toLocaleDateString('en-IN') : '-'}</div>
                                     </div>
                                     <div>
                                         <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Last Updated</div>
-                                        <div>{viewLeadModal.updated_at ? new Date(viewLeadModal.updated_at).toLocaleDateString() : '-'}</div>
+                                        <div>{viewLeadModal.updated_at ? new Date(viewLeadModal.updated_at).toLocaleDateString('en-IN') : '-'}</div>
                                     </div>
                                 </div>
                             </div>

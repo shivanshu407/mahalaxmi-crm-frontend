@@ -25,6 +25,7 @@ export default function Sidebar({ isOpen, onClose }) {
         : [
             { id: 'dashboard', label: 'Home', icon: '🏠' },
             { id: 'leads', label: 'Add Lead', icon: '➕' },
+            { id: 'clients', label: 'Add Client', icon: '🏆' },
             { id: 'inventory', label: 'Inventory', icon: '🏢' },
             { id: 'followups', label: 'My Follow-ups', icon: '📞' },
         ];

@@ -305,7 +305,7 @@ export default function Inventory() {
                                 )}
                                 <hr style={{ borderColor: 'var(--border-color)' }} />
                                 <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                                    Added by {viewItem.created_by_name || 'Unknown'} on {new Date(viewItem.created_at).toLocaleDateString()}
+                                    Added by {viewItem.created_by_name || 'Unknown'} on {new Date(viewItem.created_at).toLocaleDateString('en-IN')}
                                 </div>
                             </div>
                         </div>
