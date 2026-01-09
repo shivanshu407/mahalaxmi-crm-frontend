@@ -147,6 +147,18 @@ export default function FollowUps() {
                                             >
                                                 ✓
                                             </button>
+                                            {/* Call button - triggers phone dialer on mobile */}
+                                            {followUp.lead_phone && (
+                                                <a
+                                                    href={`tel:${followUp.lead_phone}`}
+                                                    className="btn btn-primary"
+                                                    style={{ padding: 'var(--space-2)', textDecoration: 'none' }}
+                                                    title={`Call ${followUp.lead_phone}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    📞
+                                                </a>
+                                            )}
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                                     <div style={{ fontWeight: '600' }}>

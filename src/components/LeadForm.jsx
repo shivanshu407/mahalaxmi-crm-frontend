@@ -9,7 +9,7 @@ import { useStore, LEAD_STATUSES } from '../stores/store';
 export default function LeadForm() {
     const {
         selectedLead, closeModal, createLead, updateLead, deleteLead,
-        sources, users
+        sources, users, user
     } = useStore();
 
     const [formData, setFormData] = useState({
@@ -29,7 +29,7 @@ export default function LeadForm() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Populate form when editing
+    // Populate form when editing OR set contact_person when adding new
     useEffect(() => {
         if (selectedLead) {
             setFormData({
@@ -46,8 +46,11 @@ export default function LeadForm() {
                 status: selectedLead.status || 'new',
                 assigned_to: selectedLead.assigned_to || '',
             });
+        } else {
+            // New lead - auto-fill contact_person with logged-in user's name
+            setFormData(prev => ({ ...prev, contact_person: user?.name || '' }));
         }
-    }, [selectedLead]);
+    }, [selectedLead, user]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -240,14 +243,19 @@ export default function LeadForm() {
 
                         <div className="form-row">
                             <div className="form-group">
-                                <label className="form-label">Contact Person</label>
+                                <label className="form-label">Submitted By</label>
                                 <input
                                     type="text"
                                     name="contact_person"
                                     className="form-input"
                                     value={formData.contact_person}
-                                    onInput={handleChange}
-                                    placeholder="Reference/Contact"
+                                    readOnly
+                                    style={{
+                                        background: 'var(--bg-tertiary)',
+                                        cursor: 'not-allowed',
+                                        color: 'var(--text-muted)'
+                                    }}
+                                    title="Auto-filled with your name"
                                 />
                             </div>
                             <div className="form-group">

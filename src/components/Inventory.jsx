@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'preact/hooks';
 import { useStore } from '../stores/store';
 
+// Property type options for dropdown
+const PROPERTY_TYPES = [
+    'Residential Apartment',
+    'Independent House/Villa',
+    'Plot/Land',
+    'Commercial Shop',
+    'Commercial Office',
+    'Agricultural Land',
+    'Industrial',
+    'Warehouse',
+    'Other'
+];
+
 export default function Inventory() {
     const {
         inventory, fetchInventory, addInventory, updateInventory, deleteInventory,
@@ -17,6 +30,10 @@ export default function Inventory() {
         location: '',
         size: '',
         demand: '',
+        property_type: '',
+        listing_type: 'sale',
+        status: 'available',
+        is_hot: false,
         price: '',
         other_details: ''
     });
@@ -29,13 +46,31 @@ export default function Inventory() {
     }, []);
 
     const resetForm = () => {
-        setFormData({ photo_link: '', location: '', size: '', demand: '', price: '', other_details: '' });
+        setFormData({
+            photo_link: '', location: '', size: '', demand: '',
+            property_type: '', listing_type: 'sale', status: 'available', is_hot: false,
+            price: '', other_details: ''
+        });
         setEditingItem(null);
         setErrors({});
     };
 
     const openAddModal = () => {
-        resetForm();
+        // Prefill with dummy data for easy testing
+        setFormData({
+            photo_link: '',
+            location: 'Andheri West, Mumbai',
+            size: '2 BHK - 850 sqft',
+            demand: 'High',
+            property_type: 'Residential Apartment',
+            listing_type: 'sale',
+            status: 'available',
+            is_hot: false,
+            price: '7500000',
+            other_details: 'Sea facing, 5th floor, covered parking'
+        });
+        setEditingItem(null);
+        setErrors({});
         setShowModal(true);
     };
 
@@ -46,6 +81,10 @@ export default function Inventory() {
             location: item.location || '',
             size: item.size || '',
             demand: item.demand || '',
+            property_type: item.property_type || '',
+            listing_type: item.listing_type || 'sale',
+            status: item.status || 'available',
+            is_hot: item.is_hot || false,
             price: item.price || '',
             other_details: item.other_details || ''
         });
@@ -142,9 +181,10 @@ export default function Inventory() {
                             <thead>
                                 <tr>
                                     <th>Location</th>
+                                    <th>Type</th>
                                     <th>Size</th>
-                                    <th>Demand</th>
                                     <th>Price</th>
+                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -156,11 +196,34 @@ export default function Inventory() {
                                         style={{ cursor: 'pointer' }}
                                         title="Click to view details"
                                     >
-                                        <td style={{ fontWeight: '500' }}>{item.location}</td>
+                                        <td style={{ fontWeight: '500' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                {item.is_hot && <span title="Hot Property">🔥</span>}
+                                                {item.location}
+                                            </div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                                {item.listing_type === 'rent' ? '🏷️ Rent' : '🏠 Sale'}
+                                            </div>
+                                        </td>
+                                        <td style={{ fontSize: '12px' }}>{item.property_type || '-'}</td>
                                         <td>{item.size || '-'}</td>
-                                        <td>{item.demand || '-'}</td>
                                         <td style={{ fontWeight: '600', color: 'var(--accent-success)' }}>
-                                            {item.price ? `₹${Number(item.price).toLocaleString()}` : '-'}
+                                            {item.price ? `₹${Number(item.price).toLocaleString('en-IN')}` : '-'}
+                                        </td>
+                                        <td>
+                                            <span style={{
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '11px',
+                                                fontWeight: '600',
+                                                background: item.status === 'engaged' ? '#FEF3C7' :
+                                                    item.status === 'sold' ? '#FEE2E2' : '#D1FAE5',
+                                                color: item.status === 'engaged' ? '#92400E' :
+                                                    item.status === 'sold' ? '#991B1B' : '#065F46'
+                                            }}>
+                                                {item.status === 'engaged' ? '🔒 Engaged' :
+                                                    item.status === 'sold' ? '✓ Sold' : '✓ Available'}
+                                            </span>
                                         </td>
                                         <td onClick={(e) => e.stopPropagation()}>
                                             <div style={{ display: 'flex', gap: '8px' }}>
@@ -187,7 +250,7 @@ export default function Inventory() {
                                 ))}
                                 {filteredInventory.length === 0 && (
                                     <tr>
-                                        <td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 'var(--space-8)' }}>
+                                        <td colSpan="6" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 'var(--space-8)' }}>
                                             No properties in inventory yet
                                         </td>
                                     </tr>
@@ -246,16 +309,83 @@ export default function Inventory() {
                                         />
                                     </div>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Demand / Category</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={formData.demand}
-                                        onInput={(e) => setFormData(f => ({ ...f, demand: e.target.value }))}
-                                        placeholder="e.g. High Demand / Ready to Move"
-                                    />
+
+                                {/* Property Type and Listing Type Row */}
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Property Type</label>
+                                        <select
+                                            className="form-select"
+                                            value={formData.property_type}
+                                            onChange={(e) => setFormData(f => ({ ...f, property_type: e.target.value }))}
+                                        >
+                                            <option value="">Select Type</option>
+                                            {PROPERTY_TYPES.map(type => (
+                                                <option key={type} value={type}>{type}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">For Sale / Rent</label>
+                                        <select
+                                            className="form-select"
+                                            value={formData.listing_type}
+                                            onChange={(e) => setFormData(f => ({ ...f, listing_type: e.target.value }))}
+                                        >
+                                            <option value="sale">🏠 For Sale</option>
+                                            <option value="rent">🏷️ For Rent</option>
+                                        </select>
+                                    </div>
                                 </div>
+
+                                {/* Status and Hot Property Row */}
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">Status</label>
+                                        <select
+                                            className="form-select"
+                                            value={formData.status}
+                                            onChange={(e) => setFormData(f => ({ ...f, status: e.target.value }))}
+                                        >
+                                            <option value="available">✓ Available</option>
+                                            <option value="engaged">🔒 Engaged</option>
+                                            <option value="sold">✓ Sold</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Demand Level</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={formData.demand}
+                                            onInput={(e) => setFormData(f => ({ ...f, demand: e.target.value }))}
+                                            placeholder="e.g. High / Low / Medium"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Hot Property Toggle */}
+                                <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <label style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        cursor: 'pointer',
+                                        padding: '8px 16px',
+                                        background: formData.is_hot ? '#FEF3C7' : 'var(--bg-tertiary)',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: formData.is_hot ? '2px solid #F59E0B' : '2px solid transparent'
+                                    }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.is_hot}
+                                            onChange={(e) => setFormData(f => ({ ...f, is_hot: e.target.checked }))}
+                                            style={{ width: '18px', height: '18px' }}
+                                        />
+                                        <span>🔥 Mark as Hot Property</span>
+                                    </label>
+                                </div>
+
                                 <div className="form-group">
                                     <label className="form-label">Photo Link (Google Drive)</label>
                                     <input
