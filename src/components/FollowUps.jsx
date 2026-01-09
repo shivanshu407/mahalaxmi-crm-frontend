@@ -113,14 +113,6 @@ export default function FollowUps() {
     // Get unique employees from follow-ups for filter dropdown
     const employees = isAdmin ? [...new Set(followUps.map(f => f.user_name).filter(Boolean))] : [];
 
-    // Escalation stats per employee (for admin)
-    const escalationStats = isAdmin ? leads.reduce((acc, lead) => {
-        if (lead.escalated === 1 && lead.contact_person) {
-            acc[lead.contact_person] = (acc[lead.contact_person] || 0) + 1;
-        }
-        return acc;
-    }, {}) : {};
-
     // Filter follow-ups by employee (admin only)
     const filteredFollowUps = isAdmin && employeeFilter
         ? followUps.filter(f => f.user_name === employeeFilter)
@@ -148,9 +140,9 @@ export default function FollowUps() {
                 </button>
             </div>
 
-            {/* Admin: Employee Filter & Escalation Stats */}
+            {/* Admin: Employee Filter */}
             {isAdmin && (
-                <div style={{ display: 'flex', gap: 'var(--space-4)', marginBottom: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}>
+                <div style={{ marginBottom: 'var(--space-4)' }}>
                     <select
                         className="form-select"
                         value={employeeFilter}
@@ -162,33 +154,6 @@ export default function FollowUps() {
                             <option key={emp} value={emp}>{emp}</option>
                         ))}
                     </select>
-
-                    {/* Escalation Stats */}
-                    <div style={{
-                        display: 'flex',
-                        gap: 'var(--space-3)',
-                        flexWrap: 'wrap',
-                        background: 'var(--bg-tertiary)',
-                        padding: '8px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: '12px'
-                    }}>
-                        <span style={{ fontWeight: '600', color: 'var(--text-muted)' }}>🔥 Escalations:</span>
-                        {Object.entries(escalationStats).length > 0 ? (
-                            Object.entries(escalationStats).map(([emp, count]) => (
-                                <span key={emp} style={{
-                                    background: 'var(--accent-primary)',
-                                    color: 'white',
-                                    padding: '2px 8px',
-                                    borderRadius: '10px'
-                                }}>
-                                    {emp}: {count}
-                                </span>
-                            ))
-                        ) : (
-                            <span style={{ color: 'var(--text-muted)' }}>None yet</span>
-                        )}
-                    </div>
                 </div>
             )}
 
