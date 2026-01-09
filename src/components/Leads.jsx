@@ -677,7 +677,7 @@ export default function Leads({ mode = 'new' }) {
 
 // Simplified form for employees - only input, no viewing data
 function EmployeeLeadForm() {
-    const { createLead } = useStore();
+    const { createLead, user } = useStore();
     const [formData, setFormData] = useState({
         name: '',
         phone: '',
@@ -687,7 +687,7 @@ function EmployeeLeadForm() {
         location: '',
         interest: '',
         motive_to_buy: '',
-        contact_person: '',
+        contact_person: user?.name || '', // Auto-fill with logged-in user's name
         source: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -834,8 +834,21 @@ function EmployeeLeadForm() {
 
             <div className="form-row">
                 <div className="form-group">
-                    <label className="form-label">Contact Person</label>
-                    <input type="text" name="contact_person" className="form-input" value={formData.contact_person} onInput={handleChange} />
+                    <label className="form-label">Submitted By</label>
+                    <input
+                        type="text"
+                        name="contact_person"
+                        className="form-input"
+                        value={user?.name || 'You'}
+                        disabled
+                        readOnly
+                        style={{
+                            background: 'var(--bg-tertiary)',
+                            cursor: 'not-allowed',
+                            color: 'var(--text-secondary)'
+                        }}
+                        title="Auto-filled with your name"
+                    />
                 </div>
                 <div className="form-group">
                     <label className="form-label">Source</label>
