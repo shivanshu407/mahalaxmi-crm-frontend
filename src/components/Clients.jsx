@@ -133,6 +133,27 @@ export default function Clients() {
         showToast('Template downloaded', 'success');
     };
 
+    // Parse CSV line handling quotes
+    const parseCSVLine = (line) => {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        result.push(current.trim());
+        return result;
+    };
+
     // Handle CSV File Upload
     const handleCSVUpload = async (e) => {
         const file = e.target.files?.[0];
@@ -141,28 +162,39 @@ export default function Clients() {
         setIsUploading(true);
         try {
             const text = await file.text();
-            const lines = text.split('\n').filter(line => line.trim());
+            // Handle different line endings (Windows \r\n, Mac \r, Unix \n)
+            const lines = text.split(/\r?\n|\r/).filter(line => line.trim());
+
             if (lines.length < 2) {
                 showToast('CSV file must have headers and at least one data row', 'error');
+                setIsUploading(false);
                 return;
             }
 
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/['"]/g, ''));
+            console.log('CSV Headers:', headers);
+
             const clients = [];
 
             for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',');
+                const values = parseCSVLine(lines[i]);
                 const client = {};
                 headers.forEach((header, idx) => {
-                    client[header] = values[idx]?.trim() || '';
+                    // Remove quotes from values
+                    client[header] = (values[idx] || '').replace(/^["']|["']$/g, '').trim();
                 });
-                if (client.name) clients.push(client);
+                if (client.name) {
+                    clients.push(client);
+                }
             }
 
             if (clients.length === 0) {
-                showToast('No valid clients found in CSV', 'error');
+                showToast('No valid clients found in CSV. Make sure "name" column exists.', 'error');
+                setIsUploading(false);
                 return;
             }
+
+            console.log('Parsed clients:', clients);
 
             // Call bulk upload API
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://crm-mahalaxmi-backend.onrender.com'}/api/v1/clients/bulk`, {
@@ -183,7 +215,7 @@ export default function Clients() {
             }
         } catch (error) {
             console.error('CSV upload error:', error);
-            showToast('Failed to parse CSV file', 'error');
+            showToast(`CSV Error: ${error.message || 'Failed to parse file'}`, 'error');
         } finally {
             setIsUploading(false);
             e.target.value = ''; // Reset file input
