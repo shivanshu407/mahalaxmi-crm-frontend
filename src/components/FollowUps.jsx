@@ -6,7 +6,7 @@ import { useStore } from '../stores/store';
  * FEATURES: Searchable lead selection, lead details, outcome workflow
  */
 export default function FollowUps() {
-    const { followUps, fetchFollowUps, completeFollowUp, createFollowUp, leads, fetchLeads, isLoading, user } = useStore();
+    const { followUps, fetchFollowUps, completeFollowUp, createFollowUp, createReminder, leads, fetchLeads, isLoading, user, showToast } = useStore();
 
     // Modal & Form States
     const [showAddForm, setShowAddForm] = useState(false);
@@ -16,7 +16,8 @@ export default function FollowUps() {
     const [outcomeData, setOutcomeData] = useState({
         outcome: 'completed',
         notes: '',
-        reschedule_date: ''
+        reschedule_date: '',
+        remind_date: ''
     });
 
     // Add Follow-up State
@@ -67,13 +68,30 @@ export default function FollowUps() {
         setSearchTerm('');
     };
 
+    // Get the current follow-up being completed (to get lead_id)
+    const currentFollowUp = showOutcomeModal ? followUps.find(f => f.id === showOutcomeModal) : null;
+
     const handleOutcomeSubmit = async (e) => {
         e.preventDefault();
         if (!showOutcomeModal) return;
 
+        // If remind_later, create a cold reminder
+        if (outcomeData.outcome === 'remind_later' && outcomeData.remind_date && currentFollowUp) {
+            try {
+                await createReminder({
+                    lead_id: currentFollowUp.lead_id,
+                    remind_at: outcomeData.remind_date,
+                    notes: outcomeData.notes || 'Cold lead - contact later'
+                });
+                showToast('Reminder created for this lead', 'success');
+            } catch (error) {
+                showToast('Failed to create reminder', 'error');
+            }
+        }
+
         await completeFollowUp(showOutcomeModal, outcomeData);
         setShowOutcomeModal(null);
-        setOutcomeData({ outcome: 'completed', notes: '', reschedule_date: '' });
+        setOutcomeData({ outcome: 'completed', notes: '', reschedule_date: '', remind_date: '' });
     };
 
     const getOutcomeLabel = (type) => {
@@ -83,6 +101,7 @@ export default function FollowUps() {
             case 'rescheduled': return '📅 Reschedule';
             case 'escalated': return '🔥 Escalate to Admin';
             case 'rejected': return '❌ Reject Lead';
+            case 'remind_later': return '❄️ Remind Me Later';
             default: return type;
         }
     };
@@ -336,7 +355,7 @@ export default function FollowUps() {
                                 <div className="form-group">
                                     <label className="form-label">Outcome *</label>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                        {['completed', 'try_again', 'rescheduled', 'escalated', 'rejected'].map(type => (
+                                        {['completed', 'try_again', 'rescheduled', 'remind_later', 'escalated', 'rejected'].map(type => (
                                             <div
                                                 key={type}
                                                 onClick={() => setOutcomeData(d => ({ ...d, outcome: type }))}
@@ -348,7 +367,8 @@ export default function FollowUps() {
                                                     cursor: 'pointer',
                                                     textAlign: 'center',
                                                     fontWeight: '500',
-                                                    color: type === 'rejected' ? 'var(--accent-danger)' : 'inherit'
+                                                    color: type === 'rejected' ? 'var(--accent-danger)' :
+                                                        type === 'remind_later' ? '#0891B2' : 'inherit'
                                                 }}
                                             >
                                                 {getOutcomeLabel(type)}
@@ -367,6 +387,23 @@ export default function FollowUps() {
                                             onInput={(e) => setOutcomeData(d => ({ ...d, reschedule_date: e.target.value }))}
                                             required
                                         />
+                                    </div>
+                                )}
+
+                                {/* Cold Lead Reminder Date Picker */}
+                                {outcomeData.outcome === 'remind_later' && (
+                                    <div className="form-group">
+                                        <label className="form-label">❄️ Remind Me On *</label>
+                                        <input
+                                            type="datetime-local"
+                                            className="form-input"
+                                            value={outcomeData.remind_date}
+                                            onInput={(e) => setOutcomeData(d => ({ ...d, remind_date: e.target.value }))}
+                                            required
+                                        />
+                                        <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                                            Set when you want to be reminded about this cold lead
+                                        </span>
                                     </div>
                                 )}
 
