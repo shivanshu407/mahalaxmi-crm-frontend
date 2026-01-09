@@ -709,18 +709,17 @@ export default function Leads({ mode = 'new' }) {
 // Simplified form for employees - only input, no viewing data
 function EmployeeLeadForm() {
     const { createLead, user } = useStore();
-    // Pre-filled with dummy data for easier testing
     const [formData, setFormData] = useState({
-        name: 'Raj Sharma',
-        phone: '9876543210',
-        email: 'raj.sharma@email.com',
-        budget_min: '50',
-        budget_max: '80',
-        location: 'Gurugram',
-        interest: '2 BHK',
-        motive_to_buy: 'Investment',
-        contact_person: user?.name || '', // Auto-fill with logged-in user's name
-        source: 'Facebook',
+        name: '',
+        phone: '',
+        email: '',
+        budget_min: '',
+        budget_max: '',
+        location: '',
+        interest: '',
+        motive_to_buy: '',
+        contact_person: user?.name || '',
+        source: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
