@@ -14,6 +14,7 @@ export default function Clients() {
     const [editData, setEditData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [errors, setErrors] = useState({});
     const searchTimeoutRef = useRef(null);
     const [newClient, setNewClient] = useState({
@@ -125,9 +126,6 @@ export default function Clients() {
         setEditData(null);
         setIsEditing(false);
     };
-
-    // CSV Upload State
-    const [isUploading, setIsUploading] = useState(false);
 
     // Download CSV Template
     const downloadTemplate = () => {
