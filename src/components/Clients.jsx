@@ -56,6 +56,19 @@ export default function Clients() {
         }, 300);
     };
 
+    // Modal handlers
+    const openAddModal = () => {
+        console.log('Opening add modal');
+        setShowAddForm(true);
+    };
+
+    const closeAddModal = () => {
+        console.log('Closing add modal');
+        setShowAddForm(false);
+        setNewClient({ name: '', phone: '', email: '', location: '', source: '', deal_date: '', price: '', property_details: '', documents_link: '' });
+        setErrors({});
+    };
+
     const validateForm = (data) => {
         const newErrors = {};
         if (!data.name?.trim()) {
@@ -285,7 +298,7 @@ export default function Clients() {
                             </label>
                         </>
                     )}
-                    <button className="btn btn-primary" onClick={() => { console.log('Add Client clicked, showAddForm before:', showAddForm); setShowAddForm(true); console.log('setShowAddForm called'); }} style={{ whiteSpace: 'nowrap' }}>
+                    <button className="btn btn-primary" onClick={openAddModal} style={{ whiteSpace: 'nowrap' }}>
                         + Add Client
                     </button>
                 </div>
@@ -299,7 +312,7 @@ export default function Clients() {
                     <p style={{ color: 'var(--text-muted)', marginBottom: 'var(--space-6)' }}>
                         Click the button above to add a new client to the system.
                     </p>
-                    <button className="btn btn-primary btn-lg" onClick={() => setShowAddForm(true)}>
+                    <button className="btn btn-primary btn-lg" onClick={openAddModal}>
                         + Add New Client
                     </button>
                 </div>
@@ -430,11 +443,11 @@ export default function Clients() {
 
             {/* Add Client Modal */}
             {showAddForm && (
-                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowAddForm(false)}>
+                <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && closeAddModal()}>
                     <div className="modal">
                         <div className="modal-header">
                             <h2 className="modal-title">Add New Client</h2>
-                            <button className="btn-icon" onClick={() => { console.log('Close X clicked'); setShowAddForm(false); }}>✕</button>
+                            <button className="btn-icon" onClick={closeAddModal}>✕</button>
                         </div>
                         <form onSubmit={handleAdd}>
                             <div className="modal-body">
@@ -537,7 +550,7 @@ export default function Clients() {
                                 </div>
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => { console.log('Cancel clicked'); setShowAddForm(false); }}>Cancel</button>
+                                <button type="button" className="btn btn-secondary" onClick={closeAddModal}>Cancel</button>
                                 <button type="submit" className="btn btn-primary">Add Client</button>
                             </div>
                         </form>
