@@ -31,6 +31,9 @@ export default function Clients() {
 
     const isAdmin = user?.role === 'admin';
 
+    // Ensure clients is always an array (fixes "y.map is not a function" error)
+    const safeClients = Array.isArray(clients) ? clients : [];
+
     useEffect(() => {
         if (isAdmin) {
             fetchClients();
@@ -300,11 +303,11 @@ export default function Clients() {
                         + Add New Client
                     </button>
                 </div>
-            ) : isLoading && clients.length === 0 ? (
+            ) : isLoading && safeClients.length === 0 ? (
                 <div className="loading" />
             ) : (
                 <div className="card full-width">
-                    {clients.length > 0 ? (
+                    {safeClients.length > 0 ? (
                         <>
                             <div className="desktop-only">
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -319,7 +322,7 @@ export default function Clients() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {clients.map(client => (
+                                        {safeClients.map(client => (
                                             <tr
                                                 key={client.id}
                                                 style={{ borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}
@@ -368,7 +371,7 @@ export default function Clients() {
 
                             {/* Mobile Card View */}
                             <div className="mobile-only">
-                                {clients.map(client => (
+                                {safeClients.map(client => (
                                     <div key={client.id} style={{
                                         background: 'var(--bg-tertiary)',
                                         padding: 'var(--space-4)',
