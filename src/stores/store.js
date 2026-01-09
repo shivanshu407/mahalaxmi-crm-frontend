@@ -128,6 +128,38 @@ export const useStore = create(
                 get().fetchReminders();
             },
 
+            // Projects State & Actions
+            projects: [],
+
+            fetchProjects: async () => {
+                try {
+                    const projects = await api('/projects');
+                    set({ projects });
+                } catch (error) {
+                    console.error('Fetch projects error:', error);
+                }
+            },
+
+            createProject: async (projectData) => {
+                await api('/projects', {
+                    method: 'POST',
+                    body: JSON.stringify(projectData)
+                });
+                get().fetchProjects();
+            },
+
+            updateProject: async (id, projectData) => {
+                await api(`/projects/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(projectData)
+                });
+                get().fetchProjects();
+            },
+
+            deleteProject: async (id) => {
+                await api(`/projects/${id}`, { method: 'DELETE' });
+                get().fetchProjects();
+            },
 
             // Auth
             login: async (email, password) => {
