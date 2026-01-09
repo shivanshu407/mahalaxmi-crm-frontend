@@ -110,8 +110,8 @@ export default function FollowUps() {
         }
     };
 
-    // Get unique employees from follow-ups for filter dropdown
-    const employees = isAdmin ? [...new Set(followUps.map(f => f.user_name).filter(Boolean))] : [];
+    // Get all employees for filter dropdown (from users list, not just those with follow-ups)
+    const employees = isAdmin ? users.filter(u => u.role !== 'admin').map(u => u.name) : [];
 
     // Filter follow-ups by employee (admin only)
     const filteredFollowUps = isAdmin && employeeFilter
