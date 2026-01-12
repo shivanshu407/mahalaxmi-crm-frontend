@@ -199,7 +199,8 @@ export default function Inventory() {
             }
             closeModal();
         } catch (error) {
-            showToast('Failed to save project', 'error');
+            console.error('Project save error:', error);
+            showToast(error.message || 'Failed to save project', 'error');
         } finally {
             setIsSubmitting(false);
         }
