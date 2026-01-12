@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState, useRef } from 'preact/hooks';
 import { useStore } from './stores/store';
 import Dashboard from './components/Dashboard';
 import Leads from './components/Leads';
@@ -18,16 +18,59 @@ import Toast from './components/Toast';
  * SPEED: Lazy component mounting - only render active view
  */
 export default function App() {
-    const { isAuthenticated, currentView, fetchSources, fetchUsers } = useStore();
+    const { isAuthenticated, currentView, fetchSources, fetchUsers, fetchDueReminders, dueReminders } = useStore();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const notifiedIdsRef = useRef(new Set()); // Track which reminders have been notified
 
-    // Pre-fetch lookup data on auth
+    // Request notification permission and set up reminder checking
     useEffect(() => {
         if (isAuthenticated) {
             fetchSources();
             fetchUsers();
+
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission:', permission);
+                });
+            }
+
+            // Check for due reminders every 60 seconds
+            const checkReminders = async () => {
+                await fetchDueReminders();
+            };
+
+            checkReminders(); // Initial check
+            const intervalId = setInterval(checkReminders, 60000); // Every 60 seconds
+
+            return () => clearInterval(intervalId);
         }
     }, [isAuthenticated]);
+
+    // Show browser notification when new due reminders arrive
+    useEffect(() => {
+        if (!isAuthenticated || !dueReminders || dueReminders.length === 0) return;
+        if ('Notification' in window && Notification.permission === 'granted') {
+            dueReminders.forEach(reminder => {
+                // Only notify once per reminder
+                if (!notifiedIdsRef.current.has(reminder.id)) {
+                    notifiedIdsRef.current.add(reminder.id);
+
+                    const notification = new Notification('📞 Follow-up Reminder', {
+                        body: `${reminder.lead_name || 'Lead'}: ${reminder.notes || 'Time to follow up!'}`,
+                        icon: '/assets/logo.svg',
+                        tag: `reminder-${reminder.id}`,
+                        requireInteraction: true
+                    });
+
+                    notification.onclick = () => {
+                        window.focus();
+                        notification.close();
+                    };
+                }
+            });
+        }
+    }, [dueReminders, isAuthenticated]);
 
     // Show login if not authenticated
     if (!isAuthenticated) {
