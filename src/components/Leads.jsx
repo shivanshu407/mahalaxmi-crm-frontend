@@ -30,7 +30,8 @@ export default function Leads({ mode = 'new' }) {
     const {
         leads, warmLeads, fetchLeads, fetchWarmLeads, isLoading,
         isModalOpen, openModal, closeModal, selectedLead, setSelectedLead,
-        updateLeadStatus, convertLeadToClient, rejectLead, restoreLead, scheduleVisit, deleteLead, user
+        updateLeadStatus, convertLeadToClient, rejectLead, restoreLead, scheduleVisit, deleteLead, user,
+        createReminder, showToast
     } = useStore();
 
     const [filter, setFilter] = useState({ status: '', search: '' });
@@ -47,6 +48,8 @@ export default function Leads({ mode = 'new' }) {
         documents_link: ''
     });
     const [viewLeadModal, setViewLeadModal] = useState(null); // lead to view details (read-only)
+    const [showReminderModal, setShowReminderModal] = useState(null); // lead to set reminder for
+    const [reminderData, setReminderData] = useState({ remind_at: '', notes: '' });
 
     const isAdmin = user?.role === 'admin';
 
@@ -267,6 +270,17 @@ export default function Leads({ mode = 'new' }) {
                                                         title="Schedule Site Visit"
                                                     >
                                                         📅 Visit
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        style={{ background: '#0891B2', color: 'white' }}
+                                                        onClick={() => {
+                                                            setShowReminderModal(lead);
+                                                            setReminderData({ remind_at: '', notes: '' });
+                                                        }}
+                                                        title="Set Reminder (Cold Lead)"
+                                                    >
+                                                        ❄️ Remind
                                                     </button>
                                                     <button
                                                         className="btn btn-sm btn-danger"
@@ -699,6 +713,73 @@ export default function Leads({ mode = 'new' }) {
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" onClick={() => setViewLeadModal(null)}>Close</button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Cold Lead Reminder Modal */}
+            {showReminderModal && (
+                <div className="modal-overlay" style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                    <div className="card" style={{ width: '400px', maxWidth: '90vw' }}>
+                        <div className="card-header" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <h2 className="card-title">❄️ Set Cold Lead Reminder</h2>
+                        </div>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            if (!reminderData.remind_at) {
+                                showToast('Please select a reminder date', 'error');
+                                return;
+                            }
+                            try {
+                                await createReminder({
+                                    lead_id: showReminderModal.id,
+                                    remind_at: reminderData.remind_at,
+                                    notes: reminderData.notes || `Follow up with ${showReminderModal.name}`
+                                });
+                                showToast('Reminder set! You will be notified on your dashboard.', 'success');
+                                setShowReminderModal(null);
+                                setReminderData({ remind_at: '', notes: '' });
+                            } catch (error) {
+                                showToast('Failed to set reminder', 'error');
+                            }
+                        }}>
+                            <div className="card-content" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                                <div style={{ padding: 'var(--space-3)', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-md)' }}>
+                                    <strong>{showReminderModal.name}</strong>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{showReminderModal.phone}</div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Remind Me On *</label>
+                                    <input
+                                        type="datetime-local"
+                                        className="form-input"
+                                        value={reminderData.remind_at}
+                                        onInput={(e) => setReminderData(d => ({ ...d, remind_at: e.target.value }))}
+                                        required
+                                    />
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                                        The lead will appear on your dashboard when this date arrives
+                                    </span>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Notes (reason for delay)</label>
+                                    <textarea
+                                        className="form-textarea"
+                                        value={reminderData.notes}
+                                        onInput={(e) => setReminderData(d => ({ ...d, notes: e.target.value }))}
+                                        placeholder="e.g., Client wants to invest after 3 months, waiting for bonus..."
+                                        rows="3"
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer" style={{ borderTop: '1px solid var(--border-color)', padding: 'var(--space-4)', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowReminderModal(null)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary" style={{ background: '#0891B2' }}>Set Reminder</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
