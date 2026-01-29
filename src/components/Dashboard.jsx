@@ -50,6 +50,43 @@ export default function Dashboard() {
                 </button>
             </div>
 
+            {/* Cold Lead Reminders - Visible to ALL users at the top */}
+            {dueReminders && dueReminders.length > 0 && (
+                <div className="card" style={{ borderLeft: '4px solid #0891B2', marginBottom: 'var(--space-6)', background: 'linear-gradient(135deg, rgba(8, 145, 178, 0.1), transparent)' }}>
+                    <div className="card-header">
+                        <h2 className="card-title">❄️ Cold Lead Reminders</h2>
+                        <span className="pipeline-count" style={{ background: '#0891B2' }}>{dueReminders.length}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', padding: 'var(--space-4)' }}>
+                        {dueReminders.map(reminder => (
+                            <div key={reminder.id} style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: 'var(--space-3)',
+                                background: 'var(--bg-tertiary)',
+                                borderRadius: 'var(--radius-md)',
+                                gap: '8px'
+                            }}>
+                                <div style={{ flex: 1 }}>
+                                    <strong>{reminder.lead_name || 'Lead'}</strong>
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{reminder.notes || 'No notes'}</div>
+                                    <div style={{ fontSize: '11px', color: '#0891B2' }}>
+                                        Due: {new Date(reminder.remind_at).toLocaleString('en-IN')}
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    {reminder.lead_phone && (
+                                        <a href={`tel:${reminder.lead_phone}`} className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>📞</a>
+                                    )}
+                                    <button className="btn btn-success btn-sm" onClick={() => completeReminder(reminder.id)}>✓ Done</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Stats Grid - Only visible to Admin */}
             {isAdmin && (
                 <div className="stats-grid">
