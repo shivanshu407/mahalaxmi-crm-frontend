@@ -102,7 +102,9 @@ export const useStore = create(
 
             fetchDueReminders: async () => {
                 try {
-                    const reminders = await api('/reminders/due');
+                    // Send client's current time in ISO format for timezone-correct comparison
+                    const clientTime = new Date().toISOString();
+                    const reminders = await api(`/reminders/due?clientTime=${encodeURIComponent(clientTime)}`);
                     set({ dueReminders: reminders });
                 } catch (error) {
                     console.error('Fetch due reminders error:', error);
