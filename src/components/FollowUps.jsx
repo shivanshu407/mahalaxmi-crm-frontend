@@ -35,6 +35,16 @@ export default function FollowUps() {
 
     const isAdmin = user?.role === 'admin';
 
+    // Helper to get current local datetime for min attribute (format: YYYY-MM-DDTHH:mm)
+    const getMinDateTime = () => {
+        const now = new Date();
+        return now.getFullYear() + '-' +
+            String(now.getMonth() + 1).padStart(2, '0') + '-' +
+            String(now.getDate()).padStart(2, '0') + 'T' +
+            String(now.getHours()).padStart(2, '0') + ':' +
+            String(now.getMinutes()).padStart(2, '0');
+    };
+
     useEffect(() => {
         fetchFollowUps(true);
         fetchLeads(); // Always fetch leads to select from
@@ -57,6 +67,11 @@ export default function FollowUps() {
         e.preventDefault();
         if (!selectedLead) return alert('Please select a lead');
 
+        // Validate datetime is not in the past
+        if (new Date(newFollowUp.scheduled_at) < new Date()) {
+            return alert('Cannot schedule follow-up in the past. Please select a future date and time.');
+        }
+
         try {
             await createFollowUp(newFollowUp);
             setShowAddForm(false);
@@ -78,6 +93,20 @@ export default function FollowUps() {
     const handleOutcomeSubmit = async (e) => {
         e.preventDefault();
         if (!showOutcomeModal) return;
+
+        // Validate reschedule date is not in the past
+        if ((outcomeData.outcome === 'try_again' || outcomeData.outcome === 'rescheduled') && outcomeData.reschedule_date) {
+            if (new Date(outcomeData.reschedule_date) < new Date()) {
+                return alert('Cannot reschedule to a past date/time. Please select a future date and time.');
+            }
+        }
+
+        // Validate remind date is not in the past
+        if (outcomeData.outcome === 'remind_later' && outcomeData.remind_date) {
+            if (new Date(outcomeData.remind_date) < new Date()) {
+                return alert('Cannot set reminder in the past. Please select a future date and time.');
+            }
+        }
 
         // If remind_later, create a cold reminder
         if (outcomeData.outcome === 'remind_later' && outcomeData.remind_date && currentFollowUp) {
@@ -349,6 +378,7 @@ export default function FollowUps() {
                                             className="form-input"
                                             value={newFollowUp.scheduled_at}
                                             onInput={(e) => setNewFollowUp(f => ({ ...f, scheduled_at: e.target.value }))}
+                                            min={getMinDateTime()}
                                             required
                                         />
                                     </div>
@@ -430,6 +460,7 @@ export default function FollowUps() {
                                             className="form-input"
                                             value={outcomeData.reschedule_date}
                                             onInput={(e) => setOutcomeData(d => ({ ...d, reschedule_date: e.target.value }))}
+                                            min={getMinDateTime()}
                                             required
                                         />
                                     </div>
@@ -444,6 +475,7 @@ export default function FollowUps() {
                                             className="form-input"
                                             value={outcomeData.remind_date}
                                             onInput={(e) => setOutcomeData(d => ({ ...d, remind_date: e.target.value }))}
+                                            min={getMinDateTime()}
                                             required
                                         />
                                         <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>

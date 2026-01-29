@@ -24,6 +24,13 @@ export default function Dashboard() {
             fetchWarmLeads();
             fetchVisits(today, tomorrow);
         }
+
+        // Poll for due reminders every 30 seconds so they appear at remind_at time
+        const reminderInterval = setInterval(() => {
+            fetchDueReminders();
+        }, 30000);
+
+        return () => clearInterval(reminderInterval);
     }, [user]);
 
     if (isLoading && !dashboardStats) {
