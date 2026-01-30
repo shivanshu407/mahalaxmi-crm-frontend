@@ -499,7 +499,7 @@ export default function Clients() {
                                             onChange={(e) => setNewClient(c => ({ ...c, source: e.target.value }))}
                                         >
                                             <option value="">Select Source</option>
-                                            {sources.map(s => (
+                                            {Array.isArray(sources) && sources.map(s => (
                                                 <option key={s.id} value={s.name}>{s.name}</option>
                                             ))}
                                             <option value="Manual Entry">Manual Entry</option>
