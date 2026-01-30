@@ -102,9 +102,16 @@ export const useStore = create(
 
             fetchDueReminders: async () => {
                 try {
-                    // Send client's current time in ISO format for timezone-correct comparison
-                    const clientTime = new Date().toISOString();
-                    const reminders = await api(`/reminders/due?clientTime=${encodeURIComponent(clientTime)}`);
+                    // Send client's current time formatted as YYYY-MM-DD HH:mm:ss for direct DB comparison
+                    const now = new Date();
+                    const localTime = now.getFullYear() + '-' +
+                        String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                        String(now.getDate()).padStart(2, '0') + ' ' +
+                        String(now.getHours()).padStart(2, '0') + ':' +
+                        String(now.getMinutes()).padStart(2, '0') + ':' +
+                        String(now.getSeconds()).padStart(2, '0');
+
+                    const reminders = await api(`/reminders/due?clientTime=${encodeURIComponent(localTime)}`);
                     set({ dueReminders: reminders });
                 } catch (error) {
                     console.error('Fetch due reminders error:', error);
