@@ -9,7 +9,7 @@ import { useStore } from '../stores/store';
 export default function Dashboard() {
     const {
         dashboardStats, fetchDashboard, warmLeads, fetchWarmLeads,
-        visits, fetchVisits, isLoading, setCurrentView, user,
+        visits, fetchVisits, completeVisit, isLoading, setCurrentView, user,
         dueReminders, fetchDueReminders, completeReminder
     } = useStore();
 
@@ -103,7 +103,7 @@ export default function Dashboard() {
                     </div>
                     <div className="stat-card">
                         <span className="stat-label">New Leads</span>
-                        <span className="stat-value">{stats.leads_by_status?.new || 0}</span>
+                        <span className="stat-value">{stats.new_leads || 0}</span>
                         <span className="stat-change">Fresh inquiries</span>
                     </div>
                     <div className="stat-card">
@@ -143,13 +143,22 @@ export default function Dashboard() {
                                         📞 {visit.lead_phone} • 📍 {visit.location || visit.lead_location || 'TBD'}
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
-                                        {new Date(visit.scheduled_at).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                                            {new Date(visit.scheduled_at).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                        </div>
+                                        <div style={{ fontSize: '14px' }}>
+                                            {new Date(visit.scheduled_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
                                     </div>
-                                    <div style={{ fontSize: '14px' }}>
-                                        {new Date(visit.scheduled_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
+                                    <button
+                                        className="btn btn-success btn-sm"
+                                        onClick={() => completeVisit(visit.id)}
+                                        title="Mark as Done"
+                                    >
+                                        ✓ Done
+                                    </button>
                                 </div>
                             </div>
                         ))}

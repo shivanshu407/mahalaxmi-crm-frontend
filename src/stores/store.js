@@ -390,6 +390,22 @@ export const useStore = create(
                 }
             },
 
+            completeVisit: async (id) => {
+                try {
+                    await api(`/visits/${id}/status`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: 'completed' }),
+                    });
+                    // Optimistically remove from the list
+                    set(state => ({
+                        visits: state.visits.filter(v => v.id !== id)
+                    }));
+                } catch (error) {
+                    set({ error: error.message });
+                    throw error;
+                }
+            },
+
             createLead: async (leadData) => {
                 const tempId = Date.now();
                 const optimisticLead = { ...leadData, id: tempId, status: 'new', created_at: new Date().toISOString() };

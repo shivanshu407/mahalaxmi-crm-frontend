@@ -52,7 +52,14 @@ export default function FollowUps() {
     }, []);
 
     // Filter leads for search - exclude clients and rejected leads
-    const availableLeads = leads.filter(l => l.status !== 'client' && l.status !== 'rejected');
+    // If admin has selected an employee filter, only show leads where contact_person matches
+    const availableLeads = leads.filter(l => {
+        // Exclude clients and rejected leads
+        if (l.status === 'client' || l.status === 'rejected') return false;
+        // If employee filter is selected, only show leads for that contact person
+        if (employeeFilter && l.contact_person !== employeeFilter) return false;
+        return true;
+    });
     const filteredLeads = searchTerm
         ? availableLeads.filter(l => l.name.toLowerCase().includes(searchTerm.toLowerCase()) || l.phone?.includes(searchTerm))
         : [];

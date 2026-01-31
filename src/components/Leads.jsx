@@ -73,9 +73,9 @@ export default function Leads({ mode = 'new' }) {
         if (filter.status && lead.status !== filter.status) return false;
 
         // Mode specific filtering (if data source is mixed)
-        // For 'new' mode (active pipeline), hide rejected/client/warm if the API returned them
+        // For 'new' mode (active pipeline), hide rejected/client/warm
         if (mode === 'new') {
-            if (lead.status === 'rejected' || lead.status === 'client' || (lead.escalated === 1 && !isAdmin)) return false;
+            if (lead.status === 'rejected' || lead.status === 'client' || lead.escalated === 1) return false;
         }
 
         if (filter.search) {
@@ -541,6 +541,14 @@ export default function Leads({ mode = 'new' }) {
                                         className="form-input"
                                         value={visitData.scheduled_at}
                                         onInput={(e) => setVisitData(v => ({ ...v, scheduled_at: e.target.value }))}
+                                        min={(() => {
+                                            const now = new Date();
+                                            return now.getFullYear() + '-' +
+                                                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                                                String(now.getDate()).padStart(2, '0') + 'T' +
+                                                String(now.getHours()).padStart(2, '0') + ':' +
+                                                String(now.getMinutes()).padStart(2, '0');
+                                        })()}
                                         required
                                     />
                                 </div>
