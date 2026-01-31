@@ -367,94 +367,7 @@ export default function Team() {
                             <button className="btn-icon" onClick={() => setSelectedEmployee(null)}>✕</button>
                         </div>
                         <div className="modal-body">
-                            {(() => {
-                                const stats = getEmployeeStats(selectedEmployee.name);
-                                return (
-                                    <>
-                                        {/* Stats Summary */}
-                                        <div style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: 'repeat(4, 1fr)',
-                                            gap: 'var(--space-3)',
-                                            marginBottom: 'var(--space-4)'
-                                        }}>
-                                            <div className="stat-card" style={{ padding: 'var(--space-3)' }}>
-                                                <span className="stat-label" style={{ fontSize: '11px' }}>Total Submitted</span>
-                                                <span className="stat-value" style={{ fontSize: '20px' }}>{stats.total}</span>
-                                            </div>
-                                            <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-warning)' }}>
-                                                <span className="stat-label" style={{ fontSize: '11px' }}>🔥 Escalated</span>
-                                                <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-warning)' }}>{stats.escalated}</span>
-                                            </div>
-                                            <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-danger)' }}>
-                                                <span className="stat-label" style={{ fontSize: '11px' }}>❌ Rejected</span>
-                                                <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-danger)' }}>{stats.rejected}</span>
-                                            </div>
-                                            <div className="stat-card" style={{ padding: 'var(--space-3)', borderLeft: '3px solid var(--accent-success)' }}>
-                                                <span className="stat-label" style={{ fontSize: '11px' }}>✅ Converted</span>
-                                                <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-success)' }}>{stats.converted}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Lead List */}
-                                        <h3 style={{ marginBottom: 'var(--space-3)', fontSize: '14px' }}>All Leads Submitted ({stats.total})</h3>
-                                        {stats.leads.length === 0 ? (
-                                            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-4)' }}>
-                                                No leads submitted yet.
-                                            </p>
-                                        ) : (
-                                            <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-                                                <table style={{ width: '100%', fontSize: '13px' }}>
-                                                    <thead>
-                                                        <tr>
-                                                            <th style={{ padding: '8px' }}>Name</th>
-                                                            <th style={{ padding: '8px' }}>Phone</th>
-                                                            <th style={{ padding: '8px' }}>Location</th>
-                                                            <th style={{ padding: '8px' }}>Interest</th>
-                                                            <th style={{ padding: '8px' }}>Status</th>
-                                                            <th style={{ padding: '8px' }}>Escalated</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {stats.leads.map(lead => (
-                                                            <tr key={lead.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                                                                <td style={{ padding: '8px', fontWeight: '500' }}>{lead.name}</td>
-                                                                <td style={{ padding: '8px' }}>{lead.phone}</td>
-                                                                <td style={{ padding: '8px' }}>{lead.location || '-'}</td>
-                                                                <td style={{ padding: '8px' }}>{lead.interest || '-'}</td>
-                                                                <td style={{ padding: '8px' }}>
-                                                                    <span style={{
-                                                                        padding: '2px 6px',
-                                                                        borderRadius: '10px',
-                                                                        fontSize: '10px',
-                                                                        fontWeight: '600',
-                                                                        textTransform: 'uppercase',
-                                                                        background: lead.status === 'client' ? '#D1FAE5' :
-                                                                            ['interested', 'site_visit', 'negotiation'].includes(lead.status) ? '#FEF3C7' :
-                                                                                lead.status === 'rejected' ? '#FEE2E2' : '#E5E7EB',
-                                                                        color: lead.status === 'client' ? '#065F46' :
-                                                                            ['interested', 'site_visit', 'negotiation'].includes(lead.status) ? '#92400E' :
-                                                                                lead.status === 'rejected' ? '#991B1B' : '#374151'
-                                                                    }}>
-                                                                        {lead.status?.replace('_', ' ') || 'new'}
-                                                                    </span>
-                                                                </td>
-                                                                <td style={{ padding: '8px', textAlign: 'center' }}>
-                                                                    {lead.escalated === 1 ? (
-                                                                        <span style={{ color: 'var(--accent-warning)' }}>🔥 Yes</span>
-                                                                    ) : (
-                                                                        <span style={{ color: 'var(--text-muted)' }}>-</span>
-                                                                    )}
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
-                                    </>
-                                );
-                            })()}
+                            <EmployeePerformanceContent employeeName={selectedEmployee.name} leads={leads} />
                         </div>
                         <div className="modal-footer">
                             <button className="btn btn-secondary" onClick={() => setSelectedEmployee(null)}>
@@ -465,5 +378,200 @@ export default function Team() {
                 </div>
             )}
         </div>
+    );
+}
+
+// Separate component for Employee Performance with its own state
+function EmployeePerformanceContent({ employeeName, leads }) {
+    const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'escalated', 'rejected', 'converted'
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Get all leads for this employee
+    const employeeLeads = leads.filter(l => l.contact_person === employeeName);
+    const escalatedLeads = employeeLeads.filter(l => l.escalated === 1);
+    const rejectedLeads = employeeLeads.filter(l => l.status === 'rejected');
+    const convertedLeads = employeeLeads.filter(l => l.status === 'client');
+
+    const stats = {
+        total: employeeLeads.length,
+        escalated: escalatedLeads.length,
+        rejected: rejectedLeads.length,
+        converted: convertedLeads.length
+    };
+
+    // Get filtered leads based on active filter
+    const getFilteredLeads = () => {
+        let filtered = [];
+        switch (activeFilter) {
+            case 'escalated':
+                filtered = escalatedLeads;
+                break;
+            case 'rejected':
+                filtered = rejectedLeads;
+                break;
+            case 'converted':
+                filtered = convertedLeads;
+                break;
+            default:
+                filtered = employeeLeads;
+        }
+
+        // Apply search filter
+        if (searchTerm.trim()) {
+            const search = searchTerm.toLowerCase();
+            filtered = filtered.filter(l =>
+                l.name?.toLowerCase().includes(search) ||
+                l.phone?.toLowerCase().includes(search) ||
+                l.location?.toLowerCase().includes(search)
+            );
+        }
+
+        return filtered;
+    };
+
+    const filteredLeads = getFilteredLeads();
+
+    const getFilterTitle = () => {
+        switch (activeFilter) {
+            case 'escalated': return '🔥 Escalated Leads';
+            case 'rejected': return '❌ Rejected Leads';
+            case 'converted': return '✅ Converted Leads';
+            default: return 'All Leads Submitted';
+        }
+    };
+
+    const statBoxStyle = (isActive, borderColor) => ({
+        padding: 'var(--space-3)',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        borderLeft: `3px solid ${borderColor || 'transparent'}`,
+        background: isActive ? 'var(--bg-tertiary)' : undefined,
+        transform: isActive ? 'scale(1.02)' : undefined,
+        boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.15)' : undefined
+    });
+
+    return (
+        <>
+            {/* Clickable Stats Summary */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: 'var(--space-3)',
+                marginBottom: 'var(--space-4)'
+            }}>
+                <div
+                    className="stat-card"
+                    style={statBoxStyle(activeFilter === 'all', 'var(--accent-primary)')}
+                    onClick={() => { setActiveFilter('all'); setSearchTerm(''); }}
+                >
+                    <span className="stat-label" style={{ fontSize: '11px' }}>Total Submitted</span>
+                    <span className="stat-value" style={{ fontSize: '20px' }}>{stats.total}</span>
+                </div>
+                <div
+                    className="stat-card"
+                    style={statBoxStyle(activeFilter === 'escalated', 'var(--accent-warning)')}
+                    onClick={() => { setActiveFilter('escalated'); setSearchTerm(''); }}
+                >
+                    <span className="stat-label" style={{ fontSize: '11px' }}>🔥 Escalated</span>
+                    <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-warning)' }}>{stats.escalated}</span>
+                </div>
+                <div
+                    className="stat-card"
+                    style={statBoxStyle(activeFilter === 'rejected', 'var(--accent-danger)')}
+                    onClick={() => { setActiveFilter('rejected'); setSearchTerm(''); }}
+                >
+                    <span className="stat-label" style={{ fontSize: '11px' }}>❌ Rejected</span>
+                    <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-danger)' }}>{stats.rejected}</span>
+                </div>
+                <div
+                    className="stat-card"
+                    style={statBoxStyle(activeFilter === 'converted', 'var(--accent-success)')}
+                    onClick={() => { setActiveFilter('converted'); setSearchTerm(''); }}
+                >
+                    <span className="stat-label" style={{ fontSize: '11px' }}>✅ Converted</span>
+                    <span className="stat-value" style={{ fontSize: '20px', color: 'var(--accent-success)' }}>{stats.converted}</span>
+                </div>
+            </div>
+
+            {/* Search Bar */}
+            <div style={{ marginBottom: 'var(--space-3)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Search leads by name, phone, or location..."
+                    value={searchTerm}
+                    onInput={(e) => setSearchTerm(e.target.value)}
+                    style={{ flex: 1 }}
+                />
+                {activeFilter !== 'all' && (
+                    <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => setActiveFilter('all')}
+                    >
+                        Show All
+                    </button>
+                )}
+            </div>
+
+            {/* Lead List Header */}
+            <h3 style={{ marginBottom: 'var(--space-3)', fontSize: '14px' }}>
+                {getFilterTitle()} ({filteredLeads.length})
+            </h3>
+
+            {filteredLeads.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-4)' }}>
+                    {searchTerm ? 'No leads found matching your search.' : 'No leads in this category.'}
+                </p>
+            ) : (
+                <div style={{ maxHeight: '300px', overflow: 'auto' }}>
+                    <table style={{ width: '100%', fontSize: '13px' }}>
+                        <thead>
+                            <tr>
+                                <th style={{ padding: '8px' }}>Name</th>
+                                <th style={{ padding: '8px' }}>Phone</th>
+                                <th style={{ padding: '8px' }}>Location</th>
+                                <th style={{ padding: '8px' }}>Interest</th>
+                                <th style={{ padding: '8px' }}>Status</th>
+                                <th style={{ padding: '8px' }}>Escalated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredLeads.map(lead => (
+                                <tr key={lead.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                    <td style={{ padding: '8px', fontWeight: '500' }}>{lead.name}</td>
+                                    <td style={{ padding: '8px' }}>{lead.phone}</td>
+                                    <td style={{ padding: '8px' }}>{lead.location || '-'}</td>
+                                    <td style={{ padding: '8px' }}>{lead.interest || '-'}</td>
+                                    <td style={{ padding: '8px' }}>
+                                        <span style={{
+                                            padding: '2px 6px',
+                                            borderRadius: '10px',
+                                            fontSize: '10px',
+                                            fontWeight: '600',
+                                            textTransform: 'uppercase',
+                                            background: lead.status === 'client' ? '#D1FAE5' :
+                                                ['interested', 'site_visit', 'negotiation'].includes(lead.status) ? '#FEF3C7' :
+                                                    lead.status === 'rejected' ? '#FEE2E2' : '#E5E7EB',
+                                            color: lead.status === 'client' ? '#065F46' :
+                                                ['interested', 'site_visit', 'negotiation'].includes(lead.status) ? '#92400E' :
+                                                    lead.status === 'rejected' ? '#991B1B' : '#374151'
+                                        }}>
+                                            {lead.status?.replace('_', ' ') || 'new'}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '8px', textAlign: 'center' }}>
+                                        {lead.escalated === 1 ? (
+                                            <span style={{ color: 'var(--accent-warning)' }}>🔥 Yes</span>
+                                        ) : (
+                                            <span style={{ color: 'var(--text-muted)' }}>-</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </>
     );
 }

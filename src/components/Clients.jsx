@@ -638,17 +638,23 @@ export default function Clients() {
                                         </div>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                             <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Alternate Phone</div>
+                                                <div>{selectedClient.alternate_phone || '-'}</div>
+                                            </div>
+                                            <div>
                                                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Email</div>
                                                 <div>{selectedClient.email || '-'}</div>
                                             </div>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                             <div>
                                                 <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Location</div>
                                                 <div>{selectedClient.location || '-'}</div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Source</div>
-                                            <div>{selectedClient.source || '-'}</div>
+                                            <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Source</div>
+                                                <div>{selectedClient.source || '-'}</div>
+                                            </div>
                                         </div>
 
                                         <hr style={{ borderColor: 'var(--border-color)' }} />
@@ -677,11 +683,30 @@ export default function Clients() {
                                             ) : '-'}
                                         </div>
 
-                                        {selectedClient.lead_id && (
-                                            <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: 'var(--radius-md)' }}>
-                                                <small style={{ color: 'var(--text-muted)' }}>Converted from Lead #{selectedClient.lead_id}</small>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                            <div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Submitted By</div>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    color: selectedClient.contact_person ? 'var(--text-primary)' : 'var(--text-muted)'
+                                                }}>
+                                                    {selectedClient.contact_person ? (
+                                                        <span style={{
+                                                            background: 'var(--accent-primary)',
+                                                            color: 'white',
+                                                            padding: '2px 8px',
+                                                            borderRadius: '12px',
+                                                            fontSize: '12px',
+                                                            fontWeight: '500'
+                                                        }}>
+                                                            {selectedClient.contact_person}
+                                                        </span>
+                                                    ) : '-'}
+                                                </div>
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="modal-footer">
