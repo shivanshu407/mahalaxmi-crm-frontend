@@ -10,6 +10,7 @@ import Projects from './components/Projects';
 import Team from './components/Team';
 import Login from './components/Login';
 import Sidebar from './components/Sidebar';
+import WhatsAppBroadcast from './components/WhatsAppBroadcast';
 import Toast from './components/Toast';
 
 /**
@@ -103,6 +104,8 @@ export default function App() {
                 return <AllClients />;
             case 'team':
                 return <Team />;
+            case 'whatsapp':
+                return <WhatsAppBroadcast />;
             case 'dashboard':
             default:
                 return <Dashboard />;

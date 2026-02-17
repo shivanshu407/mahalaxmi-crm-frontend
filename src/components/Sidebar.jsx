@@ -22,6 +22,7 @@ export default function Sidebar({ isOpen, onClose }) {
             { id: 'archived-leads', label: 'Archives', icon: '🗑️' },
             { id: 'all-clients', label: 'All Clients', icon: '📊' },
             { id: 'team', label: 'Team', icon: '👔' },
+            { id: 'whatsapp', label: 'WhatsApp', icon: '💬' },
         ]
         : [
             { id: 'dashboard', label: 'Home', icon: '🏠' },

@@ -602,6 +602,43 @@ export const useStore = create(
                 }
             },
 
+            // WhatsApp Broadcast State & Actions
+            whatsappRecipients: null,
+            whatsappCampaigns: [],
+
+            fetchWhatsAppRecipients: async (type = 'all', status = '') => {
+                try {
+                    let url = `/whatsapp/recipients?type=${type}`;
+                    if (status) url += `&status=${status}`;
+                    const data = await api(url);
+                    set({ whatsappRecipients: data });
+                } catch (error) {
+                    console.error('Failed to fetch WhatsApp recipients:', error);
+                }
+            },
+
+            sendWhatsAppBroadcast: async (broadcastData) => {
+                const data = await api('/whatsapp/broadcast', {
+                    method: 'POST',
+                    body: JSON.stringify(broadcastData),
+                });
+                return data;
+            },
+
+            fetchWhatsAppCampaigns: async () => {
+                try {
+                    const campaigns = await api('/whatsapp/campaigns');
+                    set({ whatsappCampaigns: campaigns });
+                } catch (error) {
+                    console.error('Failed to fetch WhatsApp campaigns:', error);
+                }
+            },
+
+            fetchWhatsAppCampaignDetail: async (id) => {
+                const detail = await api(`/whatsapp/campaigns/${id}`);
+                return detail;
+            },
+
             // UI actions
             setCurrentView: (view) => set({ currentView: view }),
             setSelectedLead: (lead) => set({ selectedLead: lead }),
