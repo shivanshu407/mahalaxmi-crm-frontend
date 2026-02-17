@@ -15,7 +15,7 @@ export default function WhatsAppBroadcast() {
     const [recipientType, setRecipientType] = useState('all_clients');
     const [leadStatus, setLeadStatus] = useState('');
     const [selectedIds, setSelectedIds] = useState({ clientIds: [], leadIds: [] });
-    const [campaignName, setCampaignName] = useState('marketing_english_16_02_2026_7145');
+    const [campaignName, setCampaignName] = useState('test');
     const [templateParams, setTemplateParams] = useState(['', '', '']);
     const [isSending, setIsSending] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -314,7 +314,7 @@ export default function WhatsAppBroadcast() {
                             placeholder="Enter your AiSensy campaign name"
                         />
                         <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-                            This must match an approved template campaign in your AiSensy dashboard
+                            This must match an API campaign name (not template name) in your AiSensy dashboard
                         </p>
                     </div>
 
